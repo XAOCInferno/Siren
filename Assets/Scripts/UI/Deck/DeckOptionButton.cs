@@ -16,7 +16,7 @@ namespace UI.Deck
 
         public override void OnButtonPressed()
         {
-            DebugSubsystem.Log($"Pressed {Enum.GetName(typeof(DeckActionType), actionType)}");
+            DebugSystem.Log($"Pressed {Enum.GetName(typeof(DeckActionType), actionType)}");
         }
     }
 }

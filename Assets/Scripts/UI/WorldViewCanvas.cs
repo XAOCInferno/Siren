@@ -26,7 +26,7 @@ namespace UI
         {
             if (_canvas == null) return;
             _canvas.worldCamera = newCamera;
-            DebugSubsystem.Log("Main camera changed");
+            DebugSystem.Log("Main camera changed");
         }
 
         private void OnMainCameraChanged([CanBeNull] Camera oldCamera, Camera newCamera)
