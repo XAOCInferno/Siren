@@ -25,7 +25,7 @@ namespace Player
             //Log success
             DebugSystem.Log($"Successfully registered player {player}. Broadcasting.");
             //Broadcast
-            PlayerEvents.InvokeOnPlayerRegistered(null, new PlayerRegisteredPayload(player));
+            PlayerEvents.InvokeOnPlayerRegistered(null, new PlayerEvents.PlayerRegisteredPayload(player));
             return player.playerData.playerID;
         }
 
@@ -33,6 +33,12 @@ namespace Player
         public static Player TryGetPlayerFromID(int playerID)
         {
             return Players.Find((v) => v.playerData.playerID == playerID);
+        }
+
+        [CanBeNull]
+        public static Player GetLocalPlayer()
+        {
+            return Players.Find((player => player.playerData.isLocallyControlled));
         }
     }
 }

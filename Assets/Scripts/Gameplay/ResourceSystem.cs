@@ -68,7 +68,7 @@ namespace Gameplay
         }
 
         //Listen to a player being registered and set up their initial resources
-        private static void OnPlayerRegistered([CanBeNull] object sender, PlayerRegisteredPayload payload)
+        private static void OnPlayerRegistered([CanBeNull] object sender, PlayerEvents.PlayerRegisteredPayload payload)
         {
             if (PlayerResources.ContainsKey(payload.player))
             {

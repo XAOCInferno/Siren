@@ -6,12 +6,7 @@ namespace Player
     public class PlayerData
     {
         public int playerID { get; set; }
-        private bool _isLocallyControlled;
-
-        public void SetIsLocallyControlled(bool isLocallyControlled)
-        {
-            _isLocallyControlled = isLocallyControlled;
-        }
+        public bool isLocallyControlled { get; set; }
     }
 
     public class Player : MonoBehaviour
@@ -23,8 +18,10 @@ namespace Player
             //Log
             DebugSystem.Log($"Creating new player which {(isLocallyControlled ? "is" : "isn't")} locally controlled");
             //Setup
-            playerData = new PlayerData();
-            playerData.SetIsLocallyControlled(isLocallyControlled);
+            playerData = new PlayerData
+            {
+                isLocallyControlled = isLocallyControlled
+            };
             PlayerSystem.RegisterPlayer(this);
         }
     }
