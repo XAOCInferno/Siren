@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 837144079136409194, guid: e0e587802197df84aa9fa9ba3d18e075, type: 3}
+      propertyPath: isLocallyControlled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3905825322631754002, guid: e0e587802197df84aa9fa9ba3d18e075, type: 3}
       propertyPath: m_Name
       value: PlayerLayoutAlt Variant

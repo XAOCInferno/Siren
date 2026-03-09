@@ -70,15 +70,15 @@ namespace Gameplay
         //Listen to a player being registered and set up their initial resources
         private static void OnPlayerRegistered([CanBeNull] object sender, PlayerEvents.PlayerRegisteredPayload payload)
         {
-            if (PlayerResources.ContainsKey(payload.player))
+            if (PlayerResources.ContainsKey(payload.RegisteredPlayer))
             {
                 Debug.DebugSystem.Warn(
-                    $"Attempting to register player with ID {payload.player.playerData.playerID} which is already registered, this will be ignored");
+                    $"Attempting to register player with ID {payload.RegisteredPlayer.playerData.playerID} which is already registered, this will be ignored");
                 return;
             }
 
             DebugSystem.Log($"Creating registered player's resources");
-            PlayerResources.Add(payload.player, new PlayerResources());
+            PlayerResources.Add(payload.RegisteredPlayer, new PlayerResources());
         }
     }
 }

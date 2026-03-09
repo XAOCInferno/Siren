@@ -1,4 +1,5 @@
 using System;
+using Gameplay;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -9,17 +10,34 @@ namespace Global
     {
     }
 
+    public static class PoolEvents
+    {
+        //Loaded card template and set up pool
+        public class PoolSetupPayload : EventArgs
+        {
+            public readonly Type PoolType;
+            public PoolSetupPayload(Type type)
+            {
+                PoolType = type;
+            }
+        }
+        public static event EventHandler<PoolSetupPayload> OnPoolSetup;
+        public static void InvokeOnPoolSetup([CanBeNull] object sender, PoolSetupPayload payload)
+        {
+            OnPoolSetup?.Invoke(sender, payload);
+        }
+    }
 
     public static class PlayerEvents
     {
         //Player registered
         public class PlayerRegisteredPayload : EventArgs
         {
-            public readonly Player.Player player;
+            public readonly Player.Player RegisteredPlayer;
 
-            public PlayerRegisteredPayload(Player.Player player)
+            public PlayerRegisteredPayload(Player.Player registeredPlayer)
             {
-                this.player = player;
+                this.RegisteredPlayer = registeredPlayer;
             }
         }
         public static event EventHandler<PlayerRegisteredPayload> OnPlayerRegistered;
@@ -28,26 +46,50 @@ namespace Global
             OnPlayerRegistered?.Invoke(sender, payload);
         }
     }
-
-
+    
     public static class DeckEvents
     {
         //Draw Card
         public class DrawCardPayload : EventArgs
         {
-            public readonly Player.Player player;
-            public readonly Gameplay.ECardType cardToDrawType;
+            public readonly Player.Player Player;
+            public readonly Gameplay.EDrawFromDeckOption DrawOption;
+            public readonly ECardType? CardToDrawType;
+            public readonly int? SpecificCardToDrawIndex;
 
-            public DrawCardPayload(Player.Player player, Gameplay.ECardType cardToDrawType)
+            public DrawCardPayload(Player.Player player, Gameplay.EDrawFromDeckOption drawOption, ECardType? cardToDrawType = null, int? specificCardToDrawIndex = null)
             {
-                this.player = player;
-                this.cardToDrawType = cardToDrawType;
+                this.Player = player;
+                this.DrawOption = drawOption;
+                this.SpecificCardToDrawIndex = specificCardToDrawIndex;
+                this.CardToDrawType = cardToDrawType;
             }
         }
         public static event EventHandler<DrawCardPayload> OnDrawCard;
         public static void InvokeOnDrawCard([CanBeNull] object sender, DrawCardPayload payload)
         {
             OnDrawCard?.Invoke(sender, payload);
+        }
+    }
+    
+    public static class HandEvents
+    {
+        //Draw Card
+        public class AddCardToHandPayload : EventArgs
+        {
+            public readonly Player.Player Player;
+            public readonly Gameplay.Card Card;
+
+            public AddCardToHandPayload(Player.Player player, Gameplay.Card card)
+            {
+                this.Player = player;
+                this.Card = card;
+            }
+        }
+        public static event EventHandler<AddCardToHandPayload> OnAddCardToHand;
+        public static void InvokeOnAddCardToHand([CanBeNull] object sender, AddCardToHandPayload payload)
+        {
+            OnAddCardToHand?.Invoke(sender, payload);
         }
     }
 }

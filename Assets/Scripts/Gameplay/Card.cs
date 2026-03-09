@@ -1,3 +1,5 @@
+using Debug;
+
 namespace Gameplay
 {
     public enum ECardType
@@ -6,23 +8,49 @@ namespace Gameplay
         Troop,
         Reaction
     }
+    public enum ECardState
+    {
+        NotInPlay = 0,
+        InDeck,
+        InHand
+    }
     public class CardData
     {
-        public ECardType type;
+        public ECardType Type;
+        public ECardState State = ECardState.NotInPlay;
     }
 
     public class Card : Utils.PooledObject
     {
-        protected CardData cardData = new CardData();
+        private readonly CardData _cardData = new();
 
+        public CardData GetCardData() => _cardData;
         public override void SetActive()
         {
-            throw new System.NotImplementedException();
+            //..Does nothing
         }
 
         public override void SetInActive()
         {
-            transform.position = Global.Defines.OutOfWorldLocation;
+            SetState(ECardState.NotInPlay);
+        }
+
+        public void SetState(ECardState newState)
+        {
+            _cardData.State = newState;
+            DebugSystem.Log($"Card {this.gameObject.name} state changed to {newState}");
+            switch (newState)
+            {
+                case ECardState.NotInPlay:
+                    gameObject.SetActive(false);
+                    break;
+                case ECardState.InDeck:
+                    gameObject.SetActive(false);
+                    break;
+                case ECardState.InHand:
+                    gameObject.SetActive(true);
+                    break;
+            }
         }
     }
 }

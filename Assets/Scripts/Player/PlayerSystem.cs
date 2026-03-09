@@ -20,8 +20,8 @@ namespace Player
             }
 
             //Set data
-            Players.Add(player);
             player.playerData.playerID = Players.Count;
+            Players.Add(player);
             //Log success
             DebugSystem.Log($"Successfully registered player {player}. Broadcasting.");
             //Broadcast

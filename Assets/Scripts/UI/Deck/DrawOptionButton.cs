@@ -20,7 +20,7 @@ namespace UI.Deck
             }
 
             DeckEvents.InvokeOnDrawCard(this,
-                new DeckEvents.DrawCardPayload(player: localPlayer, cardToDrawType: cardTypeToDraw));
+                new DeckEvents.DrawCardPayload(player: localPlayer, EDrawFromDeckOption.DrawNext, cardToDrawType: cardTypeToDraw));
         }
     }
 }
