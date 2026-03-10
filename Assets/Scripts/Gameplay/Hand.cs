@@ -44,7 +44,7 @@ namespace Gameplay
         {
             if (cardInSlot != null)
             {
-                cardInSlot.transform.position = position;
+                cardInSlot.SetDesiredPosition(position);
             }
         }
 
@@ -114,7 +114,6 @@ namespace Gameplay
                     Vector3 up = spline.EvaluateUpVector(p);
                     Quaternion rotation = Quaternion.LookRotation(CameraSubsystem.GetMainCamera().transform.forward,
                         Vector3.Cross(up * -1, fwd).normalized);
-                    //rotation = CameraSubsystem.GetMainCamera().transform.rotation * rotation;
                     handSlots[i].SetPosition(handCenterTransform.position + splinePosition);
                     handSlots[i].SetRotation(rotation);
                 }

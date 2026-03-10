@@ -1,16 +1,22 @@
 using UnityEngine;
 
-public class CardView : MonoBehaviour
+namespace Gameplay
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public class CardView : Behaviours.MoveableObject
     {
-        
-    }
+        protected Vector3 desiredPosition = Vector3.zero;
+        protected Vector3 desiredOffset = Vector3.zero;
 
-    // Update is called once per frame
-    void Update()
-    {
+        public void SetDesiredPosition(Vector3 position, float moveTime)
+        {
+            desiredPosition = position;
+            MoveToLocation(desiredPosition + desiredOffset, moveTime);
+        }
         
+        public void SetDesiredOffset(Vector3 offset, float moveTime)
+        {
+            desiredOffset = offset;
+            MoveToLocation(desiredPosition + desiredOffset, moveTime);
+        }
     }
 }
