@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: isLocallyControlled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2778591325538265939, guid: e0e587802197df84aa9fa9ba3d18e075, type: 3}
+      propertyPath: isLocallyControlled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3905825322631754002, guid: e0e587802197df84aa9fa9ba3d18e075, type: 3}
       propertyPath: m_Name
       value: PlayerLayoutAlt Variant
