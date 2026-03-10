@@ -33,14 +33,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4060771934939626519, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 500
-      objectReference: {fileID: 0}
-    - target: {fileID: 4060771934939626519, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 4060771934939626519, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -137,3 +129,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23f31a9caec65fd4f81f84c332d9e1c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DrawOptionButton
+  cardTypeToDraw: 0

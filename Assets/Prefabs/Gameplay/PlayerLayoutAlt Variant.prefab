@@ -17,10 +17,6 @@ PrefabInstance:
       value: PlayerLayoutAlt Variant
       objectReference: {fileID: 0}
     - target: {fileID: 5385485089329481579, guid: e0e587802197df84aa9fa9ba3d18e075, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 5385485089329481579, guid: e0e587802197df84aa9fa9ba3d18e075, type: 3}
       propertyPath: m_LocalPosition.z
       value: 1
       objectReference: {fileID: 0}
