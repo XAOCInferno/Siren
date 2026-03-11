@@ -7,6 +7,7 @@ namespace Gameplay
     {
         [SerializeField] protected float yMoveOnHover = 0.5f;
         [SerializeField] protected float moveTime = 0.2f;
+        private Vector2 _gridLocation;
         protected Vector3 startingPos = Vector3.zero;
         
         private void Start()
@@ -22,6 +23,11 @@ namespace Gameplay
         public void OnPointerExit(PointerEventData eventData)
         {
             MoveToLocation(startingPos, moveTime);
+        }
+        
+        public void SetGridLocation(Vector2 location)
+        {
+            _gridLocation = location;
         }
     }
 }

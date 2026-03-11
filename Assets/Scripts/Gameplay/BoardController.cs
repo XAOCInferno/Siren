@@ -19,7 +19,7 @@ namespace Gameplay
 
         [SerializeField] protected Transform mkrBoardStart;
 
-        protected List<GameObject> spawnedTiles = new();
+        protected Tile[,] tiles;
 
 
         private void Start()
@@ -30,20 +30,29 @@ namespace Gameplay
                 return;
             }
 
+            //Create tiles array
+            tiles = new Tile[boardWidth, boardHeight];
+
+            //Iterate over and assign tiles to array
             int numberOfTiles = boardWidth * boardHeight;
             int currentX = 0;
             int currentY = 0;
             for (int i = 0; i < numberOfTiles; i++)
             {
                 //Spawn
-                GameObject tile = Instantiate(tilePrefab, GetTileLocalPosition(new Vector2Int(currentX, currentY)),
+                GameObject tileObject = Instantiate(tilePrefab,
+                    GetTileLocalPositionOnGrid(new Vector2Int(currentX, currentY)),
                     transform.rotation, transform);
+                //Get Tile comp and save it
+                Tile tile = tileObject.GetComponentInChildren<Tile>();
+                Assert.NotNull(tile);
+                tile.SetGridLocation(new Vector2(currentX, currentY));
+                //Add to data
+                tiles[currentX, currentY] = tileObject.GetComponent<Tile>();
                 //Set scale
-                Transform tileTransform = tile.GetComponent<Transform>();
+                Transform tileTransform = tileObject.GetComponent<Transform>();
                 tileTransform.localScale = new Vector3(boardScale, boardScale, boardScale);
-                spawnedTiles.Add(tile);
-                //TODO: Tell tile its grid position (or perhaps we track that here. Probably here?)
-                //Ensure grid layout
+                //Increment location for next tile, obeying grid layout
                 currentX++;
                 if (currentX == boardWidth)
                 {
@@ -53,12 +62,12 @@ namespace Gameplay
             }
         }
 
-        protected Vector3 GetTileLocalPosition(Vector2Int position)
+        protected Vector3 GetTileLocalPositionOnGrid(Vector2Int gridCoordinates)
         {
             //Success
             Vector3 endPosition = mkrBoardStart ? mkrBoardStart.position : Vector3.zero;
-            Vector3 xOffset = transform.right *  position.x;
-            Vector3 yOffset = transform.forward * position.y;
+            Vector3 xOffset = transform.right * gridCoordinates.x;
+            Vector3 yOffset = transform.forward * gridCoordinates.y;
             Vector3 offset = (xOffset + yOffset) * boardScale;
             return endPosition + offset;
         }
