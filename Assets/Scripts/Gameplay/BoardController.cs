@@ -228,7 +228,7 @@ namespace Gameplay
         [SerializeField] protected float boardScale;
 
         [SerializeField] protected Transform mkrBoardStart;
-        
+
         private void Start()
         {
             //Ensure prefab is valid
@@ -278,7 +278,7 @@ namespace Gameplay
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets the LocalPosition the tile should be placed in, based on its grid coordinates.
         /// </summary>
@@ -286,7 +286,6 @@ namespace Gameplay
         /// <returns>Returns the local position for the tile.</returns>
         protected Vector3 GetTileLocalPositionOnGrid(Vector2Int gridCoordinates)
         {
-            //Success
             Vector3 endPosition = mkrBoardStart ? mkrBoardStart.position : Vector3.zero;
             Vector3 xOffset = transform.right * gridCoordinates.x;
             Vector3 yOffset = transform.forward * gridCoordinates.y;
