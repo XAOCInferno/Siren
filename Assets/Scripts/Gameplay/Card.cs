@@ -33,7 +33,10 @@ namespace Gameplay
 
         public void SetCardData(CardData newCardData)
         {
+            //Our Data
             _cardData = newCardData;
+            //Set on VM
+            view.SetViewModelData(newCardData.GetViewData());
         }
 
         public CardData GetCardData() => _cardData;

@@ -123,6 +123,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Databases.PieceDatabase
   items:
   - {fileID: 11400000, guid: 26e9041184ff8ec47bc2d50fe41dd93f, type: 2}
+  - {fileID: 11400000, guid: e77ba229067be0a4ba189f1b6a4299e3, type: 2}
+  - {fileID: 11400000, guid: 77280382f9fdd8a49a302f33c495ea24, type: 2}
+  - {fileID: 11400000, guid: 5f63673b499ec6d4c955eb9d464e64cf, type: 2}
 --- !u!1 &5311157015805044601
 GameObject:
   m_ObjectHideFlags: 0
@@ -269,7 +272,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Utils.CardDatabase
   items:
-  - {fileID: 11400000, guid: c106eac6d0ef784429c2a2d3ac6fa91e, type: 2}
+  - {fileID: 11400000, guid: 5a2e0fd70f42f2d4b93472c674596403, type: 2}
+  - {fileID: 11400000, guid: 98b889ab652c1cc43b07d69e95075bff, type: 2}
+  - {fileID: 11400000, guid: 865b9ab335295d54c9536465e46e2e75, type: 2}
 --- !u!1 &9114145469547652926
 GameObject:
   m_ObjectHideFlags: 0

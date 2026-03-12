@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 63022d2ee009621498f27395085223b8, type: 3}
-  m_Name: TestCard
+  m_Name: TestReaction
   m_EditorClassIdentifier: Assembly-CSharp:Gameplay:CardData
-  cardID: 0
-  type: 0
-  associatedPieceData: {fileID: 0}
+  cardID: 2
+  type: 2
+  associatedPieceData: {fileID: 11400000, guid: 5f63673b499ec6d4c955eb9d464e64cf, type: 2}
   viewData:
-    mainImage: {fileID: 21300000, guid: 34d4907d545333845af5786dcf600348, type: 3}
-    titleText: Placeholder
+    mainImage: {fileID: 21300000, guid: 70a7a5e84bac8e341a543caa53730314, type: 3}
+    titleText: Reaction
     costText: 0

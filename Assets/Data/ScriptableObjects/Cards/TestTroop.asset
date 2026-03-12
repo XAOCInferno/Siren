@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 63022d2ee009621498f27395085223b8, type: 3}
-  m_Name: TestCard
+  m_Name: TestTroop
   m_EditorClassIdentifier: Assembly-CSharp:Gameplay:CardData
-  cardID: 0
-  type: 0
-  associatedPieceData: {fileID: 0}
+  cardID: 1
+  type: 1
+  associatedPieceData: {fileID: 11400000, guid: e77ba229067be0a4ba189f1b6a4299e3, type: 2}
   viewData:
-    mainImage: {fileID: 21300000, guid: 34d4907d545333845af5786dcf600348, type: 3}
-    titleText: Placeholder
+    mainImage: {fileID: 21300000, guid: 886893c6c46109648a6744e8cc3caae7, type: 3}
+    titleText: Troop
     costText: 0
