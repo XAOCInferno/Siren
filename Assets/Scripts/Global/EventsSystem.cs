@@ -105,13 +105,15 @@ namespace Global
         //Draw Card
         public class AddCardToHandPayload : EventArgs
         {
-            public readonly Player.Player Player;
-            public readonly Gameplay.Card Card;
+            public readonly Player.Player player;
+            public readonly Gameplay.Card card;
+            public readonly Vector3 fromPosition;
 
-            public AddCardToHandPayload(Player.Player player, Gameplay.Card card)
+            public AddCardToHandPayload(Player.Player player, Gameplay.Card card, Vector3 fromPosition)
             {
-                this.Player = player;
-                this.Card = card;
+                this.player = player;
+                this.card = card;
+                this.fromPosition = fromPosition;
             }
         }
 

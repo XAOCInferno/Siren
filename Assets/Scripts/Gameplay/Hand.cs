@@ -70,12 +70,16 @@ namespace Gameplay
 
         protected void OnAddCardToHand([CanBeNull] object sentFrom, HandEvents.AddCardToHandPayload payload)
         {
-            if (isLocallyControlled == payload.Player.playerData.isLocallyControlled)
+            //Ensure we're only adding to the correct hand
+            if (isLocallyControlled != payload.player.playerData.isLocallyControlled)
             {
-                payload.Card.SetState(ECardState.InHand);
-                handSlots.Add(new HandSlot(payload.Card));
-                UpdateHandSlotLocations();
+                return;
             }
+
+            payload.card.transform.position = payload.fromPosition;
+            payload.card.SetState(ECardState.InHand);
+            handSlots.Add(new HandSlot(payload.card));
+            UpdateHandSlotLocations();
         }
 
         protected void UpdateHandSlotLocations()
