@@ -8,11 +8,9 @@ namespace Gameplay
 {
     public class GameplayManager : MonoBehaviour
     {
-        [SerializeField] private const GameObject LocalPlayerPrefab = null;
-        [SerializeField] private const GameObject AIPlayerPrefab = null;
-
-        //TODO: What is a reasonable size for the pool?
+        //TODO: What is a reasonable size for these pools?
         private const int DeckPoolSize = 512;
+        private const int PiecePoolSize = 100;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private void Start()
@@ -23,9 +21,9 @@ namespace Gameplay
             new GameObject("AI Player").AddComponent<Player.Player>().Init(isLocallyControlled: false);
             
             //Load addressable then instantiate it
-            var loadHandle = Addressables.LoadAssetAsync<GameObject>(
+            var loadHandleCard = Addressables.LoadAssetAsync<GameObject>(
                 "Card.prefab");
-            loadHandle.Completed += h =>
+            loadHandleCard.Completed += h =>
             {
                 //Log
                 DebugSystem.Log("Successfully loaded card template, setting up pool.");
@@ -34,6 +32,19 @@ namespace Gameplay
                 PoolSystem<Card>.SetPoolSize(DeckPoolSize);
                 //Communicate it's ready
                 PoolEvents.InvokeOnPoolSetup(this, new PoolEvents.PoolSetupPayload(typeof(Card)));
+            };
+            
+            var loadHandlePiece = Addressables.LoadAssetAsync<GameObject>(
+                "Piece.prefab");
+            loadHandlePiece.Completed += h =>
+            {
+                //Log
+                DebugSystem.Log("Successfully loaded piece template, setting up pool.");
+                //Set template and then pool size (which will instantiate the template)
+                PoolSystem<Piece>.SetTemplateToInstantiate(h.Result);
+                PoolSystem<Piece>.SetPoolSize(PiecePoolSize);
+                //Communicate it's ready
+                PoolEvents.InvokeOnPoolSetup(this, new PoolEvents.PoolSetupPayload(typeof(Piece)));
             };
         }
     }
