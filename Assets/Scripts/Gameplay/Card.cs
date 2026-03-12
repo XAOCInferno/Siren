@@ -1,7 +1,9 @@
 using System;
 using Debug;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 namespace Gameplay
 {
@@ -19,20 +21,20 @@ namespace Gameplay
         InHand
     }
 
-    public class CardData
-    {
-        public ECardType Type;
-        public ECardState State = ECardState.NotInPlay;
-    }
-
     public class Card : Utils.PooledObject, IPointerEnterHandler, IPointerExitHandler
     {
         //TODO: Possibly move this to the view
         [SerializeField] protected float yMoveOnHover = 0.5f;
         [SerializeField] protected float moveTime = 0.2f;
 
-        private readonly CardData _cardData = new();
+        private CardData _cardData;
+        private ECardState _state = ECardState.NotInPlay;
         protected CardView view = null;
+
+        public void SetCardData(CardData newCardData)
+        {
+            _cardData = newCardData;
+        }
 
         public CardData GetCardData() => _cardData;
 
@@ -57,7 +59,7 @@ namespace Gameplay
 
         public void SetState(ECardState newState)
         {
-            _cardData.State = newState;
+            _state = newState;
             DebugSystem.Log($"Card {this.gameObject.name} state changed to {newState}");
             switch (newState)
             {
@@ -71,6 +73,11 @@ namespace Gameplay
                     gameObject.SetActive(true);
                     break;
             }
+        }
+
+        public ECardState GetState()
+        {
+            return _state;
         }
 
         public void SetDesiredPosition(Vector3 position)

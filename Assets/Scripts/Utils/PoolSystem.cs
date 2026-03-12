@@ -53,6 +53,7 @@ namespace Utils
                 DebugSystem.Warn($"Cannot get available pooled object of {_poolType}, consider resizing the pool");
                 return null;
             }
+
             //Update data, it's now active
             T obj = _available[0];
             _available.RemoveAt(0);
@@ -73,6 +74,7 @@ namespace Utils
                     $"Cannot return object {objToReturn.GetPoolType()} to pool {_poolType} as object is not active");
                 return;
             }
+
             //Add to data
             _active.RemoveAt(idx);
             _available.Add(objToReturn);
@@ -92,6 +94,7 @@ namespace Utils
                     $"Trying to add object {objToAdd.GetPoolType()} to pool {_poolType}, but object is already in the pool!");
                 return;
             }
+
             //Add to data
             _available.Add(objToAdd);
             //Set State on object
@@ -108,7 +111,8 @@ namespace Utils
     public static class PoolSystem<T> where T : PooledObject
     {
         private static readonly Pool<T> Pool = new Pool<T>();
-        private static GameObject templateToInstantiate;
+        private static GameObject _templateToInstantiate;
+        private static bool _isPoolReady;
 
         //Gets existing pool of ID or get 
         public static Pool<T> GetPool()
@@ -116,19 +120,21 @@ namespace Utils
             return Pool;
         }
 
+        public static bool GetIsPoolReady() => _isPoolReady;
+
         public static void SetTemplateToInstantiate(GameObject template)
         {
-            templateToInstantiate = template;
+            _templateToInstantiate = template;
         }
 
         public static void SetPoolSize(int size)
         {
-            if (!templateToInstantiate)
+            if (!_templateToInstantiate)
             {
                 DebugSystem.Error("Attempting to set pool size, but template to instantiate is undefined.");
                 return;
             }
-            
+
             //Check current size
             int currentPoolSize = Pool.GetPoolSize();
             if (currentPoolSize > 0)
@@ -149,15 +155,19 @@ namespace Utils
             //Set pool size
             for (int i = 0; i < size - currentPoolSize; i++)
             {
-                GameObject newObject = PoolHelper.InstantiatePooledObject(templateToInstantiate);
+                GameObject newObject = PoolHelper.InstantiatePooledObject(_templateToInstantiate);
                 T component = newObject.GetComponent<T>();
                 if (!component)
                 {
                     DebugSystem.Error($"Cannot get component {typeof(T)} from instantiated object {newObject}");
                     return;
                 }
+
                 Pool.AddToPool(component);
             }
+
+            //We've setup pool, save that
+            _isPoolReady = true;
         }
     }
 

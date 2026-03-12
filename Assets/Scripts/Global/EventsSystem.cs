@@ -5,9 +5,29 @@ using UnityEngine;
 
 namespace Global
 {
-
     public static class EventsSystem
     {
+    }
+
+    public static class DatabaseEvents
+    {
+        //Loaded card template and set up pool
+        public class DatabaseSetupPayload : EventArgs
+        {
+            public readonly Type DatabaseType;
+
+            public DatabaseSetupPayload(Type type)
+            {
+                DatabaseType = type;
+            }
+        }
+
+        public static event EventHandler<DatabaseSetupPayload> OnDatabaseSet;
+
+        public static void InvokeOnPoolSetup([CanBeNull] object sender, DatabaseSetupPayload payload)
+        {
+            OnDatabaseSet?.Invoke(sender, payload);
+        }
     }
 
     public static class PoolEvents
@@ -16,12 +36,15 @@ namespace Global
         public class PoolSetupPayload : EventArgs
         {
             public readonly Type PoolType;
+
             public PoolSetupPayload(Type type)
             {
                 PoolType = type;
             }
         }
+
         public static event EventHandler<PoolSetupPayload> OnPoolSetup;
+
         public static void InvokeOnPoolSetup([CanBeNull] object sender, PoolSetupPayload payload)
         {
             OnPoolSetup?.Invoke(sender, payload);
@@ -40,13 +63,15 @@ namespace Global
                 this.RegisteredPlayer = registeredPlayer;
             }
         }
+
         public static event EventHandler<PlayerRegisteredPayload> OnPlayerRegistered;
+
         public static void InvokeOnPlayerRegistered([CanBeNull] object sender, PlayerRegisteredPayload payload)
         {
             OnPlayerRegistered?.Invoke(sender, payload);
         }
     }
-    
+
     public static class DeckEvents
     {
         //Draw Card
@@ -57,7 +82,8 @@ namespace Global
             public readonly ECardType? CardToDrawType;
             public readonly int? SpecificCardToDrawIndex;
 
-            public DrawCardPayload(Player.Player player, Gameplay.EDrawFromDeckOption drawOption, ECardType? cardToDrawType = null, int? specificCardToDrawIndex = null)
+            public DrawCardPayload(Player.Player player, Gameplay.EDrawFromDeckOption drawOption,
+                ECardType? cardToDrawType = null, int? specificCardToDrawIndex = null)
             {
                 this.Player = player;
                 this.DrawOption = drawOption;
@@ -65,13 +91,15 @@ namespace Global
                 this.CardToDrawType = cardToDrawType;
             }
         }
+
         public static event EventHandler<DrawCardPayload> OnDrawCard;
+
         public static void InvokeOnDrawCard([CanBeNull] object sender, DrawCardPayload payload)
         {
             OnDrawCard?.Invoke(sender, payload);
         }
     }
-    
+
     public static class HandEvents
     {
         //Draw Card
@@ -86,7 +114,9 @@ namespace Global
                 this.Card = card;
             }
         }
+
         public static event EventHandler<AddCardToHandPayload> OnAddCardToHand;
+
         public static void InvokeOnAddCardToHand([CanBeNull] object sender, AddCardToHandPayload payload)
         {
             OnAddCardToHand?.Invoke(sender, payload);
