@@ -18,6 +18,7 @@ namespace UI
         [SerializeField] protected Image mainImageComponent;
         [SerializeField] protected TextMeshProUGUI titleTextComponent;
         [SerializeField] protected TextMeshProUGUI costTextComponent;
+        [SerializeField] protected Image borderImageComponent;
 
         protected readonly CardViewModelData cardViewModelData = new();
 
@@ -53,6 +54,16 @@ namespace UI
                 cardViewModelData.costText = text;
                 costTextComponent.text = text;
             }
+        }
+
+        public void SetBorderTint(Color color)
+        {
+            borderImageComponent.color = color;
+        }
+
+        public void SetBorderVisibility(bool isVisible)
+        {
+            borderImageComponent.gameObject.SetActive(isVisible);
         }
     }
 }

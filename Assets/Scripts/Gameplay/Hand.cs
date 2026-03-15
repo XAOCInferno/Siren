@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Splines;
+using Utils;
 
 namespace Gameplay
 {
@@ -16,14 +17,14 @@ namespace Gameplay
 
     public class HandSlot
     {
-        public Card cardInSlot;
+        public CardLogic cardLogicInSlot;
 
         private Vector3 position;
         private Quaternion rotation;
 
-        public HandSlot(Card cardInSlot)
+        public HandSlot(CardLogic cardLogicInSlot)
         {
-            this.cardInSlot = cardInSlot;
+            this.cardLogicInSlot = cardLogicInSlot;
             UpdateCardPosition();
             UpdateCardRotation();
         }
@@ -42,15 +43,15 @@ namespace Gameplay
 
         protected void UpdateCardPosition()
         {
-            if (cardInSlot != null)
+            if (cardLogicInSlot != null)
             {
-                cardInSlot.SetDesiredPosition(position);
+                cardLogicInSlot.MoveToPosition(position);
             }
         }
 
         protected void UpdateCardRotation()
         {
-            cardInSlot.transform.rotation = rotation;
+            cardLogicInSlot.transform.rotation = rotation;
         }
     }
 
@@ -66,6 +67,7 @@ namespace Gameplay
         protected void Awake()
         {
             HandEvents.OnAddCardToHand += OnAddCardToHand;
+            HandEvents.OnRemoveCardFromHand += OnRemoveCardFromHand;
         }
 
         protected void OnAddCardToHand([CanBeNull] object sentFrom, HandEvents.AddCardToHandPayload payload)
@@ -76,9 +78,21 @@ namespace Gameplay
                 return;
             }
 
-            payload.card.transform.position = payload.fromPosition;
-            payload.card.SetState(ECardState.InHand);
-            handSlots.Add(new HandSlot(payload.card));
+            payload.cardLogic.transform.position = payload.fromPosition;
+            payload.cardLogic.GetComponent<CardState>().SetState(CardState.ECardState.InHand);
+            handSlots.Add(new HandSlot(payload.cardLogic));
+            UpdateHandSlotLocations();
+        }
+
+        protected void OnRemoveCardFromHand([CanBeNull] object sentFrom, HandEvents.RemoveCardFromHandPayload payload)
+        {
+            //Find idx of card
+            int idxActive = handSlots.FindIndex((v) => v.cardLogicInSlot == payload.cardLogic);
+            if (idxActive == -1) return;
+            //Remove it, if present in our hand
+            //TODO: Animation and state change, then return on complete, rather than instantly returning like this 
+            PoolSystem<CardLogic>.GetPool().ReturnToPool(handSlots[idxActive].cardLogicInSlot);
+            handSlots.RemoveAt(idxActive);
             UpdateHandSlotLocations();
         }
 

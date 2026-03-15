@@ -26,14 +26,15 @@ namespace Gameplay
 
     public class DeckData
     {
-        public readonly List<Card> cards = new List<Card>();
+        //TODO: Don't use ref to card, we should ref the object or an ID perhaps to fetch it
+        public readonly List<CardLogic> cards = new List<CardLogic>();
 
         [CanBeNull]
-        public Card GetNextCardOfTypeInDeck(ECardType type)
+        public CardLogic GetNextCardOfTypeInDeck(ECardType type)
         {
-            foreach (Card card in cards)
+            foreach (CardLogic card in cards)
             {
-                if (card.GetCardData().GetCardType() == type && card.GetState() == ECardState.InDeck)
+                if (card.GetCardData().GetCardType() == type && card.GetComponent<CardState>().GetState() == CardState.ECardState.InDeck)
                 {
                     return card;
                 }
@@ -42,10 +43,10 @@ namespace Gameplay
             return null;
         }
 
-        public Card GetRandomCardOfTypeInDeck(ECardType type)
+        public CardLogic GetRandomCardOfTypeInDeck(ECardType type)
         {
-            List<Card> cardsOfType = cards.Where(card =>
-                card.GetCardData().GetCardType() == type && card.GetState() == ECardState.InDeck).ToList();
+            List<CardLogic> cardsOfType = cards.Where(card =>
+                card.GetCardData().GetCardType() == type && card.GetComponent<CardState>().GetState() == CardState.ECardState.InDeck).ToList();
             return cardsOfType.Count > 0 ? cardsOfType[Random.Range(0, cardsOfType.Count)] : null;
         }
     }
@@ -75,7 +76,7 @@ namespace Gameplay
 
         protected void OnPoolSetup([CanBeNull] object sentFrom, PoolEvents.PoolSetupPayload payload)
         {
-            if (payload.PoolType == typeof(Card))
+            if (payload.PoolType == typeof(CardLogic))
             {
                 TryLoadDeck();
             }
@@ -91,7 +92,7 @@ namespace Gameplay
 
         protected void TryLoadDeck()
         {
-            if (Database<CardData>.GetIsDatabaseSet() && PoolSystem<Card>.GetIsPoolReady())
+            if (Database<CardData>.GetIsDatabaseSet() && PoolSystem<CardLogic>.GetIsPoolReady())
             {
                 //TODO: Remove debug
                 DebugFillDeckRandomly();
@@ -113,7 +114,7 @@ namespace Gameplay
             for (int i = 0; i < numberOfCardsInDeck; i++)
             {
                 //Get next card from pool
-                PooledObject nextPooledObject = PoolSystem<Card>.GetPool().GetNextAvailable();
+                PooledObject nextPooledObject = PoolSystem<CardLogic>.GetPool().GetNextAvailable();
                 if (nextPooledObject == null)
                 {
                     DebugSystem.Error("Cannot get next card from pool, consider resizing the pool!");
@@ -121,11 +122,11 @@ namespace Gameplay
                 }
 
                 //Get data
-                Card nextCard = nextPooledObject.GetComponent<Card>();
-                nextCard.SetCardData(cardDatas[Random.Range(0, cardDatas.Length)]);
-                nextCard.SetState(ECardState.NotInPlay);
+                CardLogic nextCardLogic = nextPooledObject.GetComponent<CardLogic>();
+                nextCardLogic.SetCardData(cardDatas[Random.Range(0, cardDatas.Length)]);
+                nextCardLogic.GetComponent<CardState>().SetState(CardState.ECardState.NotInPlay);
                 //Add to deck
-                AddCardToDeck(nextCard, EAddToDeckOption.AddToRandomPosition);
+                AddCardToDeck(nextCardLogic, EAddToDeckOption.AddToRandomPosition);
             }
         }
 
@@ -140,7 +141,7 @@ namespace Gameplay
 
             //We are, so draw
             DebugSystem.Log($"{payload.Player.playerData.playerID} is attempting to draw a card");
-            Card cardToDraw = null;
+            CardLogic cardLogicToDraw = null;
             switch (payload.DrawOption)
             {
                 //Get next card, closest to index 0
@@ -149,11 +150,11 @@ namespace Gameplay
                     //Get the card to draw
                     if (payload.CardToDrawType != null)
                     {
-                        cardToDraw = deckData.GetNextCardOfTypeInDeck(payload.CardToDrawType.Value);
+                        cardLogicToDraw = deckData.GetNextCardOfTypeInDeck(payload.CardToDrawType.Value);
                     }
                     else if (deckData.cards.Count > 0)
                     {
-                        cardToDraw = deckData.cards[0];
+                        cardLogicToDraw = deckData.cards[0];
                     }
 
                     break;
@@ -163,11 +164,11 @@ namespace Gameplay
                     //Get the card to draw
                     if (payload.CardToDrawType != null)
                     {
-                        cardToDraw = deckData.GetRandomCardOfTypeInDeck(payload.CardToDrawType.Value);
+                        cardLogicToDraw = deckData.GetRandomCardOfTypeInDeck(payload.CardToDrawType.Value);
                     }
                     else if (deckData.cards.Count > 0)
                     {
-                        cardToDraw = deckData.cards[Random.Range(0, deckData.cards.Count)];
+                        cardLogicToDraw = deckData.cards[Random.Range(0, deckData.cards.Count)];
                     }
 
                     break;
@@ -183,10 +184,10 @@ namespace Gameplay
                     {
                         //Try get card of that index
                         //Check card is correct type
-                        Card possibleCardToDraw = deckData.cards[payload.SpecificCardToDrawIndex.Value];
-                        if (possibleCardToDraw.GetCardData().GetCardType() == payload.CardToDrawType)
+                        CardLogic possibleCardLogicToDraw = deckData.cards[payload.SpecificCardToDrawIndex.Value];
+                        if (possibleCardLogicToDraw.GetCardData().GetCardType() == payload.CardToDrawType)
                         {
-                            cardToDraw = possibleCardToDraw;
+                            cardLogicToDraw = possibleCardLogicToDraw;
                         }
                     }
 
@@ -194,7 +195,7 @@ namespace Gameplay
             }
 
             //Draw if we have a card to draw, otherwise log error
-            if (!cardToDraw)
+            if (!cardLogicToDraw)
             {
                 DebugSystem.Warn(
                     $"Cannot draw card from deck, as no cards of type {payload.CardToDrawType} are in deck!");
@@ -202,25 +203,25 @@ namespace Gameplay
             }
 
             //Success, log, remove from deck, then add to hand
-            DebugSystem.Log($"Successfully drawn card {cardToDraw} from deck, adding to hand.");
-            RemoveCardFromDeck(cardToDraw);
+            DebugSystem.Log($"Successfully drawn card {cardLogicToDraw} from deck, adding to hand.");
+            RemoveCardFromDeck(cardLogicToDraw);
             HandEvents.InvokeOnAddCardToHand(this,
-                new HandEvents.AddCardToHandPayload(payload.Player, cardToDraw, drawCardMkr.position));
+                new HandEvents.AddCardToHandPayload(payload.Player, cardLogicToDraw, drawCardMkr.position));
         }
 
-        public void AddCardToDeck(Card card, EAddToDeckOption addOption, int? optionalSpecificPosition = 0)
+        public void AddCardToDeck(CardLogic cardLogic, EAddToDeckOption addOption, int? optionalSpecificPosition = 0)
         {
             //Place it in location of deck
             switch (addOption)
             {
                 case EAddToDeckOption.AddToTop:
-                    deckData.cards.Insert(0, card);
+                    deckData.cards.Insert(0, cardLogic);
                     break;
                 case EAddToDeckOption.AddToBottom:
-                    deckData.cards.Add(card);
+                    deckData.cards.Add(cardLogic);
                     break;
                 case EAddToDeckOption.AddToRandomPosition:
-                    deckData.cards.Insert(Random.Range(0, deckData.cards.Count), card);
+                    deckData.cards.Insert(Random.Range(0, deckData.cards.Count), cardLogic);
                     break;
                 case EAddToDeckOption.AddToSpecificPosition:
                     if (optionalSpecificPosition == null)
@@ -229,25 +230,25 @@ namespace Gameplay
                         return;
                     }
 
-                    deckData.cards.Insert(optionalSpecificPosition.Value, card);
+                    deckData.cards.Insert(optionalSpecificPosition.Value, cardLogic);
                     break;
             }
 
             //State
-            card.SetState(ECardState.InDeck);
+            cardLogic.GetComponent<CardState>().SetState(CardState.ECardState.InDeck);
         }
 
-        public void RemoveCardFromDeck(Card cardToRemove)
+        public void RemoveCardFromDeck(CardLogic cardLogicToRemove)
         {
             //Check card is actually in our deck
-            if (!deckData.cards.Contains(cardToRemove))
+            if (!deckData.cards.Contains(cardLogicToRemove))
             {
-                DebugSystem.Error($"Cannot remove card {cardToRemove} from deck, as it is not in deck!");
+                DebugSystem.Error($"Cannot remove card {cardLogicToRemove} from deck, as it is not in deck!");
                 return;
             }
 
             //It is, so remove it
-            deckData.cards.RemoveAt(deckData.cards.IndexOf(cardToRemove));
+            deckData.cards.RemoveAt(deckData.cards.IndexOf(cardLogicToRemove));
         }
     }
 }

@@ -28,10 +28,10 @@ namespace Gameplay
                 //Log
                 DebugSystem.Log("Successfully loaded card template, setting up pool.");
                 //Set template and then pool size (which will instantiate the template)
-                PoolSystem<Card>.SetTemplateToInstantiate(h.Result);
-                PoolSystem<Card>.SetPoolSize(DeckPoolSize);
+                PoolSystem<CardLogic>.SetTemplateToInstantiate(h.Result);
+                PoolSystem<CardLogic>.SetPoolSize(DeckPoolSize);
                 //Communicate it's ready
-                PoolEvents.InvokeOnPoolSetup(this, new PoolEvents.PoolSetupPayload(typeof(Card)));
+                PoolEvents.InvokeOnPoolSetup(this, new PoolEvents.PoolSetupPayload(typeof(CardLogic)));
             };
 
             var loadHandlePiece = Addressables.LoadAssetAsync<GameObject>(

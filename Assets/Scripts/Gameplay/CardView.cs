@@ -1,9 +1,12 @@
+using System;
+using Behaviours;
+using JetBrains.Annotations;
 using UI;
 using UnityEngine;
 
 namespace Gameplay
 {
-    public class CardView : Behaviours.MoveableObject
+    public class CardView : MoveableObject
     {
         [SerializeField] protected CardViewModel cardViewModel;
 
@@ -21,10 +24,34 @@ namespace Gameplay
             MoveToLocation(desiredPosition + desiredOffset, moveTime);
         }
 
+        public void SetDesiredPosition(Vector3 position, float moveTime,
+            [CanBeNull] Func<MoveCompleteCallbackType, int> callback)
+        {
+            desiredPosition = position;
+            MoveToLocation(desiredPosition + desiredOffset, moveTime, callback);
+        }
+
         public void SetDesiredOffset(Vector3 offset, float moveTime)
         {
             desiredOffset = offset;
             MoveToLocation(desiredPosition + desiredOffset, moveTime);
+        }
+
+        public void OnStateChanged(int newState)
+        {
+            CardState.ECardState state = (CardState.ECardState)newState;
+            switch (state)
+            {
+                case CardState.ECardState.NotInPlay:
+                case CardState.ECardState.InDeck:
+                case CardState.ECardState.InHand:
+                    cardViewModel.SetBorderVisibility(false);
+                    break;
+                case CardState.ECardState.SelectedInHand:
+                case CardState.ECardState.PlayedToBoard:
+                    cardViewModel.SetBorderVisibility(true);
+                    break;
+            }
         }
     }
 }

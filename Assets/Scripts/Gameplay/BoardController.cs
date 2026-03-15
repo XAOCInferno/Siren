@@ -375,6 +375,8 @@ namespace Gameplay
                     $"No Tile at position {payload.gridCoordinates.ToString()} to place piece on! This shouldn't happen.");
                 return;
             }
+            //Set occupied
+            tileParent.SetOccupier(piece);
 
             pieceTransform.parent = tileParent.GetComponent<Transform>();
             pieceTransform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +

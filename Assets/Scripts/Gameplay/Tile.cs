@@ -1,3 +1,4 @@
+using Global;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -28,6 +29,14 @@ namespace Gameplay
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            //Ensure this is valid
+            if (isOccupiedByPiece || CardService.localCardLogicBeingPlayed == null) return;
+
+            //Valid, get data and spawn piece
+            CardService.localCardLogicBeingPlayed.PlayCard(_gridLocation);
+
+            //Clear
+            CardService.ClearCardBeingPlayed();
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -36,10 +45,22 @@ namespace Gameplay
         }
 
         public Transform GetPieceConnectionMkr() => pieceConnectionMkr;
-        
+
         public void SetGridLocation(Vector2Int location)
         {
             _gridLocation = location;
+        }
+
+        public void SetOccupier(Piece piece)
+        {
+            isOccupiedByPiece = true;
+            occupiedByPiece = piece;
+        }
+
+        public void ClearOccupier()
+        {
+            isOccupiedByPiece = false;
+            occupiedByPiece = null;
         }
     }
 }

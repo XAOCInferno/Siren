@@ -130,13 +130,13 @@ namespace Global
         public class AddCardToHandPayload : EventArgs
         {
             public readonly Player.Player player;
-            public readonly Gameplay.Card card;
+            public readonly Gameplay.CardLogic cardLogic;
             public readonly Vector3 fromPosition;
 
-            public AddCardToHandPayload(Player.Player player, Gameplay.Card card, Vector3 fromPosition)
+            public AddCardToHandPayload(Player.Player player, Gameplay.CardLogic cardLogic, Vector3 fromPosition)
             {
                 this.player = player;
-                this.card = card;
+                this.cardLogic = cardLogic;
                 this.fromPosition = fromPosition;
             }
         }
@@ -146,6 +146,24 @@ namespace Global
         public static void InvokeOnAddCardToHand([CanBeNull] object sender, AddCardToHandPayload payload)
         {
             OnAddCardToHand?.Invoke(sender, payload);
+        }
+
+        //Remove Card
+        public class RemoveCardFromHandPayload : EventArgs
+        {
+            public readonly CardLogic cardLogic;
+
+            public RemoveCardFromHandPayload(CardLogic cardLogic)
+            {
+                this.cardLogic = cardLogic;
+            }
+        }
+
+        public static event EventHandler<RemoveCardFromHandPayload> OnRemoveCardFromHand;
+
+        public static void InvokeOnRemoveCardFromHand([CanBeNull] object sender, RemoveCardFromHandPayload payload)
+        {
+            OnRemoveCardFromHand?.Invoke(sender, payload);
         }
     }
 }
