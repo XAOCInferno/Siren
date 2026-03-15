@@ -10,7 +10,7 @@ namespace Gameplay
     {
         //TODO: What is a reasonable size for these pools?
         private const int DeckPoolSize = 512;
-        private const int PiecePoolSize = 100;
+        private const int PiecePoolSize = 256;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private void Start()
@@ -19,7 +19,7 @@ namespace Gameplay
             new GameObject("LocalPlayer").AddComponent<Player.Player>().Init(isLocallyControlled: true);
             //AI Player
             new GameObject("AI Player").AddComponent<Player.Player>().Init(isLocallyControlled: false);
-            
+
             //Load addressable then instantiate it
             var loadHandleCard = Addressables.LoadAssetAsync<GameObject>(
                 "Card.prefab");
@@ -33,7 +33,7 @@ namespace Gameplay
                 //Communicate it's ready
                 PoolEvents.InvokeOnPoolSetup(this, new PoolEvents.PoolSetupPayload(typeof(Card)));
             };
-            
+
             var loadHandlePiece = Addressables.LoadAssetAsync<GameObject>(
                 "Piece.prefab");
             loadHandlePiece.Completed += h =>

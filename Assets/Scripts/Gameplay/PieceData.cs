@@ -6,5 +6,10 @@ namespace Gameplay
     public class PieceData : ScriptableObject
     {
         [SerializeField] private int pieceID;
+
+        public PieceData()
+        {
+            pieceID = 0;
+        }
     }
 }

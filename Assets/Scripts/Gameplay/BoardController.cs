@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Debug;
+using Global;
 using JetBrains.Annotations;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Pool;
+using Utils;
 
 namespace Gameplay
 {
@@ -13,7 +16,7 @@ namespace Gameplay
     /// </summary>
     public static class BoardSystem<T> where T : UnityEngine.Object
     {
-        private static T[,] _items;
+        private static T[,] _items = new T[0, 0];
 
         /// <summary>
         /// Sets the size of the grid
@@ -23,6 +26,11 @@ namespace Gameplay
         public static void SetGridSize(int width, int height)
         {
             _items = new T[width, height];
+        }
+
+        public static Vector2Int GetGridSize()
+        {
+            return new Vector2Int(_items.GetLength(0), _items.GetLength(1));
         }
 
         /// <summary>
@@ -233,6 +241,11 @@ namespace Gameplay
 
         [SerializeField] protected Transform mkrBoardStart;
 
+        private void Awake()
+        {
+            BoardEvents.OnOrderPlacePieceOnBoard += OnOrderPlacePieceOnBoard;
+        }
+
         private void Start()
         {
             CreateBoardLayout();
@@ -252,6 +265,7 @@ namespace Gameplay
 
             //Create tiles array
             BoardSystem<Tile>.SetGridSize(boardWidth, boardHeight);
+            BoardSystem<Piece>.SetGridSize(boardWidth, boardHeight);
 
             //Iterate over and assign tiles to array
             int numberOfTiles = boardWidth * boardHeight;
@@ -303,6 +317,73 @@ namespace Gameplay
             Vector3 yOffset = transform.forward * gridCoordinates.y;
             Vector3 offset = (xOffset + yOffset) * boardScale;
             return endPosition + offset;
+        }
+
+        protected void OnOrderPlacePieceOnBoard(object sender, BoardEvents.OrderPlacePieceOnBoardPayload payload)
+        {
+            //Get tile we wish to place on
+            Tile tile = BoardSystem<Tile>.GetItemOnGrid(payload.gridCoordinates);
+
+            //Check tile is present
+            if (!tile)
+            {
+                DebugSystem.Error(
+                    $"Cannot place piece on location {payload.gridCoordinates.ToString()} as there is no tile there");
+                return;
+            }
+
+            //Check location is free
+            if (BoardSystem<Piece>.GetItemOnGrid(payload.gridCoordinates))
+            {
+                DebugSystem.Error(
+                    $"Cannot place piece on location {payload.gridCoordinates.ToString()} as this location is already occupied");
+                return;
+            }
+
+            //Try get pooled object
+            PooledObject piecePooledObject = PoolSystem<Piece>.GetPool().GetNextAvailable();
+            if (!piecePooledObject)
+            {
+                DebugSystem.Error(
+                    $"Cannot place piece on location {payload.gridCoordinates.ToString()} due to no pooled pieces being ready");
+                return;
+            }
+
+            //Get piece
+            Piece piece = piecePooledObject.GetComponent<Piece>();
+
+            //Check connection pieces are valid
+            if (!tile.GetPieceConnectionMkr() || !piece.GetTileConnectionMkr())
+            {
+                DebugSystem.Error(
+                    $"Cannot place piece on location {payload.gridCoordinates.ToString()} due to missing connection mkr on either the piece or the tile, check prefabs");
+                return;
+            }
+
+            //Now everything has been validated, add it
+
+            //Set scale
+            Transform pieceTransform = piece.GetComponent<Transform>();
+            pieceTransform.localScale = new Vector3(boardScale, boardScale, boardScale);
+
+            //Parent & offset
+            Tile tileParent = BoardSystem<Tile>.GetItemOnGrid(payload.gridCoordinates);
+            if (!tileParent)
+            {
+                //Err: missing tile
+                DebugSystem.Error(
+                    $"No Tile at position {payload.gridCoordinates.ToString()} to place piece on! This shouldn't happen.");
+                return;
+            }
+
+            pieceTransform.parent = tileParent.GetComponent<Transform>();
+            pieceTransform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +
+                                           (piece.GetTileConnectionMkr().transform.localPosition * -1);
+
+            //Set State
+            BoardSystem<Piece>.SetItemOnGrid(payload.gridCoordinates, piece);
+            piece.SetGridLocation(payload.gridCoordinates);
+            piece.SetState(EPieceState.OnBoard);
         }
     }
 }

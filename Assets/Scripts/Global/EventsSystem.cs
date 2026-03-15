@@ -30,6 +30,30 @@ namespace Global
         }
     }
 
+    public static class BoardEvents
+    {
+        //Spawn a piece
+        public class OrderPlacePieceOnBoardPayload : EventArgs
+        {
+            public readonly PieceData pieceData;
+            public readonly Vector2Int gridCoordinates;
+
+            public OrderPlacePieceOnBoardPayload(PieceData pieceData, Vector2Int gridCoordinates)
+            {
+                this.pieceData = pieceData;
+                this.gridCoordinates = gridCoordinates;
+            }
+        }
+
+        public static event EventHandler<OrderPlacePieceOnBoardPayload> OnOrderPlacePieceOnBoard;
+
+        public static void InvokeOnOrderPlacePieceOnBoard([CanBeNull] object sender,
+            OrderPlacePieceOnBoardPayload payload)
+        {
+            OnOrderPlacePieceOnBoard?.Invoke(sender, payload);
+        }
+    }
+
     public static class PoolEvents
     {
         //Loaded card template and set up pool

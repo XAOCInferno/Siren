@@ -1,4 +1,5 @@
 using Debug;
+using UnityEngine;
 using Utils;
 
 namespace Gameplay
@@ -9,10 +10,16 @@ namespace Gameplay
         OnBoard,
     }
 
+    //TODO: Grid location inheritable? Maybe an interface for something that can be placed on the board
     public class Piece : PooledObject
     {
+        [SerializeField] private Transform tileConnectionMkr;
         private EPieceState _state;
         private readonly PieceData _pieceData;
+
+        public Transform GetTileConnectionMkr() => tileConnectionMkr;
+
+        private Vector2Int _gridLocation;
 
         public override void SetActive()
         {
@@ -37,6 +44,11 @@ namespace Gameplay
                     gameObject.SetActive(true);
                     break;
             }
+        }
+
+        public void SetGridLocation(Vector2Int location)
+        {
+            _gridLocation = location;
         }
     }
 }
