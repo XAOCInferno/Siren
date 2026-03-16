@@ -1,4 +1,5 @@
 using Debug;
+using NUnit.Framework;
 using UnityEngine;
 using Utils.StateMachine;
 
@@ -6,10 +7,20 @@ namespace Gameplay.Piece
 {
     public class PieceView : MonoBehaviour, IStateObject<EPieceState>
     {
+        [SerializeField] private Mesh pieceMesh;
+        [SerializeField] private GameObject pieceMeshObject;
+
         private PieceState _state;
 
         private void Awake()
         {
+            //All pieces must have a mesh
+            Assert.NotNull(pieceMesh);
+
+            //Set mesh
+            SetMesh(pieceMesh);
+
+            //Subscribe to state machine
             ListenToStateChangedEvent();
         }
 
@@ -29,10 +40,22 @@ namespace Gameplay.Piece
         {
             switch (payload.newState)
             {
-                //..Nothing yet
+                case EPieceState.NotInPlay:
+                    pieceMeshObject.SetActive(false);
+                    break;
+                case EPieceState.OnBoard:
+                    pieceMeshObject.SetActive(true);
+                    break;
             }
 
             return 0;
+        }
+
+        protected void SetMesh(Mesh newMesh)
+        {
+            MeshFilter meshFilter = pieceMeshObject.GetComponent<MeshFilter>();
+            Assert.NotNull(meshFilter);
+            meshFilter.mesh = newMesh;
         }
     }
 }
