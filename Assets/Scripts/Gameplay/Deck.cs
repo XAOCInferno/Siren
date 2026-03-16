@@ -35,7 +35,7 @@ namespace Gameplay
         {
             foreach (CardLogic card in cards)
             {
-                if (card.GetCardData().GetCardType() == type && card.GetComponent<CardState>().GetState() == CardState.ECardState.InDeck)
+                if (card.GetCardData().GetCardType() == type && card.GetComponent<CardState>().GetStateMachine().GetState() == ECardState.InDeck)
                 {
                     return card;
                 }
@@ -47,7 +47,7 @@ namespace Gameplay
         public CardLogic GetRandomCardOfTypeInDeck(ECardType type)
         {
             List<CardLogic> cardsOfType = cards.Where(card =>
-                card.GetCardData().GetCardType() == type && card.GetComponent<CardState>().GetState() == CardState.ECardState.InDeck).ToList();
+                card.GetCardData().GetCardType() == type && card.GetComponent<CardState>().GetStateMachine().GetState() == ECardState.InDeck).ToList();
             return cardsOfType.Count > 0 ? cardsOfType[Random.Range(0, cardsOfType.Count)] : null;
         }
     }
@@ -125,7 +125,7 @@ namespace Gameplay
                 //Get data
                 CardLogic nextCardLogic = nextPooledObject.GetComponent<CardLogic>();
                 nextCardLogic.SetCardData(cardDatas[Random.Range(0, cardDatas.Length)]);
-                nextCardLogic.GetComponent<CardState>().SetState(CardState.ECardState.NotInPlay);
+                nextCardLogic.GetComponent<CardState>().GetStateMachine().SetState(ECardState.NotInPlay);
                 //Add to deck
                 AddCardToDeck(nextCardLogic, EAddToDeckOption.AddToRandomPosition);
             }
@@ -236,7 +236,7 @@ namespace Gameplay
             }
 
             //State
-            cardLogic.GetComponent<CardState>().SetState(CardState.ECardState.InDeck);
+            cardLogic.GetComponent<CardState>().GetStateMachine().SetState(ECardState.InDeck);
         }
 
         public void RemoveCardFromDeck(CardLogic cardLogicToRemove)

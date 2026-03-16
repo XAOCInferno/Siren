@@ -1,17 +1,38 @@
 using System;
 using Behaviours;
+using Debug;
 using JetBrains.Annotations;
 using UI;
 using UnityEngine;
+using Utils.StateMachine;
 
 namespace Gameplay.Card
 {
-    public class CardView : MoveableObject
+    public class CardView : MoveableObject, IStateObject<ECardState>
     {
         [SerializeField] protected CardViewModel cardViewModel;
 
+        private CardState _state;
+
         protected Vector3 desiredPosition = Vector3.zero;
         protected Vector3 desiredOffset = Vector3.zero;
+
+        private void Awake()
+        {
+            ListenToStateChangedEvent();
+        }
+
+        public void ListenToStateChangedEvent()
+        {
+            _state = GetComponent<CardState>();
+            if (!_state)
+            {
+                DebugSystem.Error("CardState not found");
+                return;
+            }
+
+            _state.GetStateMachine().ListenToStateChangedCallback(this);
+        }
 
         public void SetViewModelData(CardViewModelData data)
         {
@@ -37,21 +58,22 @@ namespace Gameplay.Card
             MoveToLocation(desiredPosition + desiredOffset, moveTime);
         }
 
-        public void OnStateChanged(int newState)
+        public int OnStateChanged(EnumStateMachine<ECardState>.StateChangedEventPayload payload)
         {
-            CardState.ECardState state = (CardState.ECardState)newState;
-            switch (state)
+            switch (payload.newState)
             {
-                case CardState.ECardState.NotInPlay:
-                case CardState.ECardState.InDeck:
-                case CardState.ECardState.InHand:
-                case CardState.ECardState.PlayedToBoard:
+                case ECardState.NotInPlay:
+                case ECardState.InDeck:
+                case ECardState.InHand:
+                case ECardState.PlayedToBoard:
                     cardViewModel.SetBorderVisibility(false);
                     break;
-                case CardState.ECardState.SelectedInHand:
+                case ECardState.SelectedInHand:
                     cardViewModel.SetBorderVisibility(true);
                     break;
             }
+
+            return 0;
         }
     }
 }

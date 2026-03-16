@@ -1,28 +1,25 @@
 using Debug;
 using UnityEngine;
+using Utils.StateMachine;
 
 namespace Gameplay.Card
 {
-    public interface IStateObject
+    public enum ECardState
     {
-        public void OnStateChanged(int newState);
+        None = 0,
+        NotInPlay,
+        InDeck,
+        InHand,
+        SelectedInHand,
+        PlayedToBoard,
     }
 
     public class CardState : MonoBehaviour
     {
-        public enum ECardState
-        {
-            None = 0,
-            NotInPlay,
-            InDeck,
-            InHand,
-            SelectedInHand,
-            PlayedToBoard,
-        }
-
-        private ECardState _state = ECardState.None;
         private CardView _view;
         private CardLogic _logic;
+
+        private readonly EnumStateMachine<ECardState> _stateMachine = new();
 
         private void Awake()
         {
@@ -30,22 +27,8 @@ namespace Gameplay.Card
             _logic = GetComponent<CardLogic>();
         }
 
-        public void SetState(ECardState newState)
-        {
-            if (_state == newState) return;
-            //Diff state
-            _state = newState;
-            DebugSystem.Log($"Card {gameObject.name} state changed to {newState}");
-
-            _view.OnStateChanged((int)_state);
-            _logic.OnStateChanged((int)_state);
-        }
-
-        public ECardState GetState()
-        {
-            return _state;
-        }
-
         public CardView GetView() => _view;
+
+        public EnumStateMachine<ECardState> GetStateMachine() => _stateMachine;
     }
 }

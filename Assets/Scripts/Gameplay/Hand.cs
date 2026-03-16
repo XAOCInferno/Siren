@@ -80,7 +80,7 @@ namespace Gameplay
             }
 
             payload.cardLogic.transform.position = payload.fromPosition;
-            payload.cardLogic.GetComponent<CardState>().SetState(CardState.ECardState.InHand);
+            payload.cardLogic.GetComponent<CardState>().GetStateMachine().SetState(ECardState.InHand);
             handSlots.Add(new HandSlot(payload.cardLogic));
             UpdateHandSlotLocations();
         }
