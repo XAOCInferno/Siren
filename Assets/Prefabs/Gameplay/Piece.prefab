@@ -40,6 +40,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6193927212131786125}
+  - component: {fileID: 3813222921458950428}
+  - component: {fileID: 1163622125027051723}
   - component: {fileID: 1637445002832472595}
   - component: {fileID: 677679241249238265}
   m_Layer: 0
@@ -66,6 +68,30 @@ Transform:
   - {fileID: 4999560461677630787}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3813222921458950428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6379527258099078197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38a08a11d410e7c439f12c5de87eae07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Piece.PieceState
+--- !u!114 &1163622125027051723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6379527258099078197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5eaa9cbae2ba404cb35bce108e90d5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Piece.PieceView
 --- !u!114 &1637445002832472595
 MonoBehaviour:
   m_ObjectHideFlags: 0

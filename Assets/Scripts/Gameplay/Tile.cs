@@ -1,4 +1,5 @@
 using Gameplay.Card;
+using Gameplay.Piece;
 using Global;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace Gameplay
         protected Vector3 startingPos = Vector3.zero;
 
         protected bool isOccupiedByPiece = false;
-        [CanBeNull] protected Piece occupiedByPiece = null;
+        [CanBeNull] protected PieceLogic occupiedByPieceLogic = null;
 
         private void Start()
         {
@@ -52,16 +53,16 @@ namespace Gameplay
             _gridLocation = location;
         }
 
-        public void SetOccupier(Piece piece)
+        public void SetOccupier(PieceLogic pieceLogic)
         {
             isOccupiedByPiece = true;
-            occupiedByPiece = piece;
+            occupiedByPieceLogic = pieceLogic;
         }
 
         public void ClearOccupier()
         {
             isOccupiedByPiece = false;
-            occupiedByPiece = null;
+            occupiedByPieceLogic = null;
         }
     }
 }

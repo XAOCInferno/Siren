@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Debug;
+using Gameplay.Piece;
 using Global;
 using JetBrains.Annotations;
 using NUnit.Framework;
@@ -265,7 +266,7 @@ namespace Gameplay
 
             //Create tiles array
             BoardSystem<Tile>.SetGridSize(boardWidth, boardHeight);
-            BoardSystem<Piece>.SetGridSize(boardWidth, boardHeight);
+            BoardSystem<PieceLogic>.SetGridSize(boardWidth, boardHeight);
 
             //Iterate over and assign tiles to array
             int numberOfTiles = boardWidth * boardHeight;
@@ -333,7 +334,7 @@ namespace Gameplay
             }
 
             //Check location is free
-            if (BoardSystem<Piece>.GetItemOnGrid(payload.gridCoordinates))
+            if (BoardSystem<PieceLogic>.GetItemOnGrid(payload.gridCoordinates))
             {
                 DebugSystem.Error(
                     $"Cannot place piece on location {payload.gridCoordinates.ToString()} as this location is already occupied");
@@ -341,7 +342,7 @@ namespace Gameplay
             }
 
             //Try get pooled object
-            PooledObject piecePooledObject = PoolSystem<Piece>.GetPool().GetNextAvailable();
+            PooledObject piecePooledObject = PoolSystem<PieceLogic>.GetPool().GetNextAvailable();
             if (!piecePooledObject)
             {
                 DebugSystem.Error(
@@ -350,10 +351,10 @@ namespace Gameplay
             }
 
             //Get piece
-            Piece piece = piecePooledObject.GetComponent<Piece>();
+            PieceLogic pieceLogic = piecePooledObject.GetComponent<PieceLogic>();
 
             //Check connection pieces are valid
-            if (!tile.GetPieceConnectionMkr() || !piece.GetTileConnectionMkr())
+            if (!tile.GetPieceConnectionMkr() || !pieceLogic.GetTileConnectionMkr())
             {
                 DebugSystem.Error(
                     $"Cannot place piece on location {payload.gridCoordinates.ToString()} due to missing connection mkr on either the piece or the tile, check prefabs");
@@ -363,7 +364,7 @@ namespace Gameplay
             //Now everything has been validated, add it
 
             //Set scale
-            Transform pieceTransform = piece.GetComponent<Transform>();
+            Transform pieceTransform = pieceLogic.GetComponent<Transform>();
             pieceTransform.localScale = new Vector3(boardScale, boardScale, boardScale);
 
             //Parent & offset
@@ -375,17 +376,18 @@ namespace Gameplay
                     $"No Tile at position {payload.gridCoordinates.ToString()} to place piece on! This shouldn't happen.");
                 return;
             }
+
             //Set occupied
-            tileParent.SetOccupier(piece);
+            tileParent.SetOccupier(pieceLogic);
 
             pieceTransform.parent = tileParent.GetComponent<Transform>();
             pieceTransform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +
-                                           (piece.GetTileConnectionMkr().transform.localPosition * -1);
+                                           (pieceLogic.GetTileConnectionMkr().transform.localPosition * -1);
 
             //Set State
-            BoardSystem<Piece>.SetItemOnGrid(payload.gridCoordinates, piece);
-            piece.SetGridLocation(payload.gridCoordinates);
-            piece.SetState(EPieceState.OnBoard);
+            BoardSystem<PieceLogic>.SetItemOnGrid(payload.gridCoordinates, pieceLogic);
+            pieceLogic.SetGridLocation(payload.gridCoordinates);
+            piecePooledObject.GetComponent<PieceState>().GetStateMachine().SetState(EPieceState.OnBoard);
         }
     }
 }

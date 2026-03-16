@@ -1,5 +1,6 @@
 using Debug;
 using Gameplay.Card;
+using Gameplay.Piece;
 using Global;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -42,10 +43,10 @@ namespace Gameplay
                 //Log
                 DebugSystem.Log("Successfully loaded piece template, setting up pool.");
                 //Set template and then pool size (which will instantiate the template)
-                PoolSystem<Piece>.SetTemplateToInstantiate(h.Result);
-                PoolSystem<Piece>.SetPoolSize(PiecePoolSize);
+                PoolSystem<PieceLogic>.SetTemplateToInstantiate(h.Result);
+                PoolSystem<PieceLogic>.SetPoolSize(PiecePoolSize);
                 //Communicate it's ready
-                PoolEvents.InvokeOnPoolSetup(this, new PoolEvents.PoolSetupPayload(typeof(Piece)));
+                PoolEvents.InvokeOnPoolSetup(this, new PoolEvents.PoolSetupPayload(typeof(PieceLogic)));
             };
         }
     }
