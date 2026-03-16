@@ -45,10 +45,10 @@ namespace Gameplay
                 case CardState.ECardState.NotInPlay:
                 case CardState.ECardState.InDeck:
                 case CardState.ECardState.InHand:
+                case CardState.ECardState.PlayedToBoard:
                     cardViewModel.SetBorderVisibility(false);
                     break;
                 case CardState.ECardState.SelectedInHand:
-                case CardState.ECardState.PlayedToBoard:
                     cardViewModel.SetBorderVisibility(true);
                     break;
             }
