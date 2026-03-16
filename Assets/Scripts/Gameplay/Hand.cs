@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Behaviours;
 using Debug;
+using Gameplay.Card;
 using Global;
 using JetBrains.Annotations;
 using UnityEditor;

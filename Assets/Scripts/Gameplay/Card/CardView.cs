@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using UI;
 using UnityEngine;
 
-namespace Gameplay
+namespace Gameplay.Card
 {
     public class CardView : MoveableObject
     {

@@ -1,5 +1,6 @@
 using Debug;
 using Gameplay;
+using Gameplay.Card;
 using Global;
 using Player;
 using UnityEngine;
@@ -8,7 +9,7 @@ namespace UI.Deck
 {
     public class DrawOptionButton : SimpleButton
     {
-        [SerializeField] protected Gameplay.ECardType cardTypeToDraw;
+        [SerializeField] protected ECardType cardTypeToDraw;
 
         public override void OnButtonPressed()
         {

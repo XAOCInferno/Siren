@@ -1,4 +1,4 @@
-namespace Gameplay
+namespace Gameplay.Card
 {
     public static class CardService
     {

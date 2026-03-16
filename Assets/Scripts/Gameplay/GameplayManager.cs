@@ -1,4 +1,5 @@
 using Debug;
+using Gameplay.Card;
 using Global;
 using UnityEngine;
 using UnityEngine.AddressableAssets;

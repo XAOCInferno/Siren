@@ -1,5 +1,6 @@
 using System;
 using Gameplay;
+using Gameplay.Card;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -130,10 +131,10 @@ namespace Global
         public class AddCardToHandPayload : EventArgs
         {
             public readonly Player.Player player;
-            public readonly Gameplay.CardLogic cardLogic;
+            public readonly CardLogic cardLogic;
             public readonly Vector3 fromPosition;
 
-            public AddCardToHandPayload(Player.Player player, Gameplay.CardLogic cardLogic, Vector3 fromPosition)
+            public AddCardToHandPayload(Player.Player player, CardLogic cardLogic, Vector3 fromPosition)
             {
                 this.player = player;
                 this.cardLogic = cardLogic;

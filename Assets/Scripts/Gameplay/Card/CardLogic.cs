@@ -5,10 +5,9 @@ using Global;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 using Utils;
 
-namespace Gameplay
+namespace Gameplay.Card
 {
     public enum ECardType
     {

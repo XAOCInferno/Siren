@@ -2,7 +2,7 @@ using JetBrains.Annotations;
 using UI;
 using UnityEngine;
 
-namespace Gameplay
+namespace Gameplay.Card
 {
     [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/Gameplay/Card", order = 1)]
     public class CardData : ScriptableObject

@@ -1,7 +1,7 @@
 using Debug;
 using UnityEngine;
 
-namespace Gameplay
+namespace Gameplay.Card
 {
     public interface IStateObject
     {
