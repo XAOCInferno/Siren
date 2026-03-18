@@ -1,3 +1,4 @@
+using Interaction;
 using NUnit.Framework;
 using UnityEngine.EventSystems;
 using Utils;
@@ -6,7 +7,8 @@ using Utils.StateMachine;
 namespace Gameplay.Piece
 {
     //TODO: Grid location inheritable? Maybe an interface for something that can be placed on the board
-    public class PieceLogic : PooledObject, IStateObject<EPieceLogicState>, IPointerEnterHandler, IPointerExitHandler,
+    public class PieceLogic : PooledObject, IStateObject<EPieceLogicState>, IInteractable, IPointerEnterHandler,
+        IPointerExitHandler,
         IPointerClickHandler
     {
         private PieceObject _pieceObject;
@@ -26,11 +28,13 @@ namespace Gameplay.Piece
 
         public override void SetActive()
         {
+            InteractionSystem.SetInteractable(this, true);
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
         }
 
         public override void SetInActive()
         {
+            InteractionSystem.SetInteractable(this, false);
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.NotInPlay);
         }
 
@@ -53,25 +57,54 @@ namespace Gameplay.Piece
         public void OnPointerEnter(PointerEventData eventData)
         {
             //TODO: If can select...
-            if (_pieceObject.GetState().GetLogicStateMachine().GetState() != EPieceLogicState.SelectedOnBoard)
+            if (_pieceObject.GetState().GetLogicStateMachine().GetState() != EPieceLogicState.SelectedOnBoard &&
+                _pieceObject.GetState().interactable)
             {
-                _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Hovered);
+                print("TRYING TO HOVER");
+                InteractionSystem.SetHovered(this);
             }
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
             //TODO: If can select...
-            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.SelectedOnBoard);
-            _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Selected);
+            if (_pieceObject.GetState().interactable)
+            {
+                InteractionSystem.SetSelected(this);
+            }
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (_pieceObject.GetState().GetLogicStateMachine().GetState() != EPieceLogicState.SelectedOnBoard)
+            if (_pieceObject.GetState().GetLogicStateMachine().GetState() != EPieceLogicState.SelectedOnBoard &&
+                _pieceObject.GetState().interactable)
             {
-                _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Idle);
+                InteractionSystem.SetIdle(this);
             }
+        }
+
+        //IInteractable, Do not call directly instead let service call this
+        public void SetIdle()
+        {
+            _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Idle);
+            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
+        }
+
+        public void SetHovered()
+        {
+            _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Hovered);
+            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
+        }
+
+        public void SetSelected()
+        {
+            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.SelectedOnBoard);
+            _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Selected);
+        }
+
+        public void SetInteractable(bool interactable)
+        {
+            _pieceObject.GetState().interactable = interactable;
         }
     }
 }

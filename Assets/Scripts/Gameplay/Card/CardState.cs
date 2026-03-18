@@ -1,9 +1,10 @@
+using Interaction;
 using UnityEngine;
 using Utils.StateMachine;
 
 namespace Gameplay.Card
 {
-    public enum ECardState
+    public enum ECardLogicState
     {
         None = 0,
         NotInPlay,
@@ -15,8 +16,12 @@ namespace Gameplay.Card
 
     public class CardState : MonoBehaviour
     {
-        private readonly EnumStateMachine<ECardState> _stateMachine = new();
-
-        public EnumStateMachine<ECardState> GetStateMachine() => _stateMachine;
+        //Logic
+        private readonly EnumStateMachine<ECardLogicState> _logicStateMachine = new();
+        public EnumStateMachine<ECardLogicState> GetLogicStateMachine() => _logicStateMachine;
+        
+        //View
+        private readonly EnumStateMachine<EInteractionState> _interactionStateMachine = new();
+        public EnumStateMachine<EInteractionState> GetInteractionStateMachine() => _interactionStateMachine;
     }
 }

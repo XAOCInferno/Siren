@@ -29,7 +29,7 @@ namespace Utils.StateMachine
             _state = newState;
             DebugSystem.Log($"State changed from {oldState} to {newState}");
             //Callback
-            onStateChangeCallback(new StateChangedEventPayload(oldState, newState));
+            onStateChangeCallback?.Invoke(new StateChangedEventPayload(oldState, newState));
         }
 
         public T GetState()

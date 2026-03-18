@@ -80,7 +80,6 @@ namespace Gameplay.Piece
 
         public int OnStateChanged(EnumStateMachine<EPieceViewState>.StateChangedEventPayload payload)
         {
-            print(payload.newState);
             switch (payload.newState)
             {
                 case EPieceViewState.Idle:

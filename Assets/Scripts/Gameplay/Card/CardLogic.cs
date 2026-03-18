@@ -3,6 +3,7 @@ using Behaviours;
 using Debug;
 using Gameplay.Tile;
 using Global;
+using Interaction;
 using JetBrains.Annotations;
 using NUnit.Framework;
 using UnityEngine;
@@ -21,22 +22,17 @@ namespace Gameplay.Card
 
     public enum ECardMoveContext
     {
+        None,
         DeckToHand,
         HandToBoard,
         HandToHand
     }
 
-    public class CardLogic : PooledObject, IStateObject<ECardState>, IPointerEnterHandler, IPointerExitHandler,
+    public class CardLogic : PooledObject, IStateObject<ECardLogicState>,
+        IInteractable, IPointerEnterHandler,
+        IPointerExitHandler,
         IPointerClickHandler
     {
-        //TODO: Possibly move this to the view
-        [SerializeField] protected float yMoveOnHover = 0.5f;
-
-        [SerializeField] protected float moveTimeHandToHand = 0.2f;
-        [SerializeField] protected float moveTimeDeckToHand = 0.3f;
-        [SerializeField] protected float moveTimeHandToBoard = 0.3f;
-        [SerializeField] protected float noContextMoveToTime = 0.2f;
-
         private CardData _cardData;
         private CardObject _cardObject;
 
@@ -51,7 +47,7 @@ namespace Gameplay.Card
 
         public void ListenToStateChangedEvent()
         {
-            _cardObject.GetState().GetStateMachine().ListenToStateChangedCallback(this);
+            _cardObject.GetState().GetLogicStateMachine().ListenToStateChangedCallback(this);
         }
 
         public void SetCardData(CardData newCardData)
@@ -72,21 +68,21 @@ namespace Gameplay.Card
 
         public override void SetInActive()
         {
-            _cardObject.GetState().GetStateMachine().SetState(ECardState.NotInPlay);
+            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.NotInPlay);
         }
 
-        public int OnStateChanged(EnumStateMachine<ECardState>.StateChangedEventPayload payload)
+        public int OnStateChanged(EnumStateMachine<ECardLogicState>.StateChangedEventPayload payload)
         {
             switch (payload.newState)
             {
-                case ECardState.NotInPlay:
-                case ECardState.InDeck:
+                case ECardLogicState.NotInPlay:
+                case ECardLogicState.InDeck:
                     gameObject.SetActive(false);
                     break;
-                case ECardState.InHand:
-                case ECardState.SelectedInHand:
-                case ECardState.PlayedToBoard:
+                case ECardLogicState.InHand:
                     gameObject.SetActive(true);
+                    InteractionSystem.SetInteractable(this, true);
+                    InteractionSystem.SetIdle(this);
                     break;
             }
 
@@ -95,76 +91,21 @@ namespace Gameplay.Card
 
         public void MoveToPosition(Vector3 position)
         {
-            _cardObject.GetView().SetDesiredPosition(position, noContextMoveToTime);
+            CardView view = _cardObject.GetView();
+            view.SetDesiredPosition(position, view.GetMoveSpeedFromContext(ECardMoveContext.None));
         }
 
         public void MoveToPosition(Vector3 position, ECardMoveContext context)
         {
-            _cardObject.GetView().SetDesiredPosition(position, GetMoveSpeedFromContext(context));
+            CardView view = _cardObject.GetView();
+            view.SetDesiredPosition(position, view.GetMoveSpeedFromContext(context));
         }
 
         public void MoveToPosition(Vector3 position, ECardMoveContext context,
             [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
-            _cardObject.GetView().SetDesiredPosition(position, GetMoveSpeedFromContext(context), callback);
-        }
-
-        protected float GetMoveSpeedFromContext(ECardMoveContext context)
-        {
-            float moveTime = noContextMoveToTime;
-            switch (context)
-            {
-                case ECardMoveContext.DeckToHand:
-                    moveTime = moveTimeDeckToHand;
-                    break;
-                case ECardMoveContext.HandToBoard:
-                    moveTime = moveTimeHandToBoard;
-                    break;
-                case ECardMoveContext.HandToHand:
-                    moveTime = moveTimeHandToHand;
-                    break;
-            }
-
-            return moveTime;
-        }
-
-        //TODO: moveTime dynamic?
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            if (_cardObject.GetState().GetStateMachine().GetState() == ECardState.InHand)
-            {
-                _cardObject.GetView().SetDesiredOffset(Vector3.up * yMoveOnHover, moveTimeDeckToHand);
-            }
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            if (_cardObject.GetState().GetStateMachine().GetState() == ECardState.InHand)
-            {
-                _cardObject.GetView().SetDesiredOffset(Vector3.zero, moveTimeDeckToHand);
-            }
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            //TODO: Can activate calculation here
-            bool canActivate = true;
-            canActivate &= _cardObject.GetState().GetStateMachine().GetState() == ECardState.InHand;
-            canActivate &= CardService.localCardLogicBeingPlayed != this;
-            if (!canActivate)
-            {
-                return;
-            }
-
-            DebugSystem.Log($"Card {gameObject.name} is being played from hand");
-            _cardObject.GetState().GetStateMachine().SetState(ECardState.SelectedInHand);
-            CardService.SetCardBeingPlayed(this);
-        }
-
-        public void CancelClick()
-        {
-            _cardObject.GetState().GetStateMachine().SetState(ECardState.InHand);
-            _cardObject.GetView().SetDesiredOffset(Vector3.zero, moveTimeHandToHand);
+            CardView view = _cardObject.GetView();
+            view.SetDesiredPosition(position, view.GetMoveSpeedFromContext(context), callback);
         }
 
         public void PlayCard(Vector2Int atGridLocation)
@@ -175,17 +116,14 @@ namespace Gameplay.Card
             desiredGridLocation = atGridLocation;
 
             //Change state to being played to the board
-            _cardObject.GetState().GetStateMachine().SetState(ECardState.PlayedToBoard);
+            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.PlayedToBoard);
 
             //Try get tile
             TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(atGridLocation);
-            if (!tile)
-            {
-                //No tile, so just try to play (though this shouldn't happen)
-                DebugSystem.Error($"No tile found at location {atGridLocation} so cannot move card to it!");
-                FinishPlayCard(EMoveCompleteCallbackType.Completed);
-                return;
-            }
+            Assert.NotNull(tile);
+
+            //End interaction
+            InteractionSystem.SetInteractable(this, false);
 
             //Move to, on completion play card
             MoveToPosition(tile.transform.position, ECardMoveContext.HandToBoard, FinishPlayCard);
@@ -202,9 +140,88 @@ namespace Gameplay.Card
 
             //Remove from hand
             HandEvents.InvokeOnRemoveCardFromHand(this, new HandEvents.RemoveCardFromHandPayload(this));
+            PoolSystem<CardLogic>.GetPool().ReturnToPool(this);
 
             //End
             return 0;
+        }
+
+        //TODO: moveTime dynamic?
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (_cardObject.GetState().GetLogicStateMachine().GetState() == ECardLogicState.InHand)
+            {
+                InteractionSystem.SetHovered(this);
+            }
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (_cardObject.GetState().GetLogicStateMachine().GetState() == ECardLogicState.InHand)
+            {
+                InteractionSystem.SetIdle(this);
+            }
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            //TODO: Can activate calculation here
+            bool canActivate = true;
+            canActivate &= _cardObject.GetState().GetLogicStateMachine().GetState() == ECardLogicState.InHand;
+            canActivate &= CardService.localCardLogicBeingPlayed != this;
+            if (!canActivate)
+            {
+                return;
+            }
+
+            DebugSystem.Log($"Card {gameObject.name} is being played from hand");
+            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.SelectedInHand);
+            InteractionSystem.SetSelected(this);
+        }
+
+        //IInteractable, Do not call directly instead let service call this
+        public void SetIdle()
+        {
+            CardView view = _cardObject.GetView();
+            //Set idle state
+            _cardObject.GetState().GetInteractionStateMachine().SetState(EInteractionState.Idle);
+            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.InHand);
+            //Apply idle offset
+            view.SetDesiredOffset(Vector3.zero, view.GetMoveSpeedFromContext(ECardMoveContext.DeckToHand));
+
+            //If we're the card being played, then clear
+            if (CardService.localCardLogicBeingPlayed == this)
+            {
+                CardService.ClearCardBeingPlayed();
+            }
+        }
+
+        public void SetHovered()
+        {
+            _cardObject.GetState().GetInteractionStateMachine().SetState(EInteractionState.Hovered);
+        }
+
+        public void SetSelected()
+        {
+            CardState state = _cardObject.GetState();
+            state.GetInteractionStateMachine().SetState(EInteractionState.Selected);
+            CardService.SetCardBeingPlayed(this);
+        }
+
+        public void SetInteractable(bool interactable)
+        {
+            CardState state = _cardObject.GetState();
+            EnumStateMachine<EInteractionState> stateMachine = state.GetInteractionStateMachine();
+            if (!interactable || stateMachine.GetState() == EInteractionState.UnInteractable)
+            {
+                state.GetInteractionStateMachine().SetState(EInteractionState.Idle);
+            }
+
+            //If we're the card being played, then clear
+            if (CardService.localCardLogicBeingPlayed == this)
+            {
+                CardService.ClearCardBeingPlayed();
+            }
         }
     }
 }

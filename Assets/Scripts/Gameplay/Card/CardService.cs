@@ -6,11 +6,6 @@ namespace Gameplay.Card
 
         public static void SetCardBeingPlayed(CardLogic cardLogic)
         {
-            if (localCardLogicBeingPlayed != null)
-            {
-                localCardLogicBeingPlayed.CancelClick();
-            }
-
             localCardLogicBeingPlayed = cardLogic;
         }
 

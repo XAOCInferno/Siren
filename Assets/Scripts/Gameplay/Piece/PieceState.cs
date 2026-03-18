@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utils.StateMachine;
 
 namespace Gameplay.Piece
@@ -24,10 +25,13 @@ namespace Gameplay.Piece
         //Logic
         private readonly EnumStateMachine<EPieceLogicState> _logicStateMachine = new();
         public EnumStateMachine<EPieceLogicState> GetLogicStateMachine() => _logicStateMachine;
+        
         //View
         private readonly EnumStateMachine<EPieceViewState> _viewStateMachine = new();
         public EnumStateMachine<EPieceViewState> GetViewStateMachine() => _viewStateMachine;
 
+        public bool interactable;
+        
         public void SetGridLocation(Vector2Int location)
         {
             _gridLocation = location;

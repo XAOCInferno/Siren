@@ -80,7 +80,7 @@ namespace Gameplay
             }
 
             payload.cardLogic.transform.position = payload.fromPosition;
-            payload.cardLogic.GetComponent<CardState>().GetStateMachine().SetState(ECardState.InHand);
+            payload.cardLogic.GetComponent<CardState>().GetLogicStateMachine().SetState(ECardLogicState.InHand);
             handSlots.Add(new HandSlot(payload.cardLogic));
             UpdateHandSlotLocations();
         }
@@ -91,8 +91,7 @@ namespace Gameplay
             int idxActive = handSlots.FindIndex((v) => v.cardLogicInSlot == payload.cardLogic);
             if (idxActive == -1) return;
             //Remove it, if present in our hand
-            //TODO: Animation and state change, then return on complete, rather than instantly returning like this 
-            PoolSystem<CardLogic>.GetPool().ReturnToPool(handSlots[idxActive].cardLogicInSlot);
+            //TODO: Animation and state change, then return on complete, rather than instantly returning like this
             handSlots.RemoveAt(idxActive);
             UpdateHandSlotLocations();
         }

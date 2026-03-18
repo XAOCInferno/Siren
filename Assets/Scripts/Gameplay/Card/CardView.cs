@@ -1,6 +1,7 @@
 using System;
 using Behaviours;
 using Debug;
+using Interaction;
 using JetBrains.Annotations;
 using UI;
 using UnityEngine;
@@ -8,9 +9,17 @@ using Utils.StateMachine;
 
 namespace Gameplay.Card
 {
-    public class CardView : MoveableObject, IStateObject<ECardState>
+    public class CardView : MoveableObject, IStateObject<EInteractionState>
     {
         [SerializeField] protected CardViewModel cardViewModel;
+
+        //TODO: Possibly move this to the view
+        [SerializeField] protected float yMoveOnHover = 0.5f;
+
+        [SerializeField] protected float moveTimeHandToHand = 0.2f;
+        [SerializeField] protected float moveTimeDeckToHand = 0.3f;
+        [SerializeField] protected float moveTimeHandToBoard = 0.3f;
+        [SerializeField] protected float noContextMoveToTime = 0.2f;
 
         private CardState _state;
 
@@ -31,7 +40,7 @@ namespace Gameplay.Card
                 return;
             }
 
-            _state.GetStateMachine().ListenToStateChangedCallback(this);
+            _state.GetInteractionStateMachine().ListenToStateChangedCallback(this);
         }
 
         public void SetViewModelData(CardViewModelData data)
@@ -58,22 +67,44 @@ namespace Gameplay.Card
             MoveToLocation(desiredPosition + desiredOffset, moveTime);
         }
 
-        public int OnStateChanged(EnumStateMachine<ECardState>.StateChangedEventPayload payload)
+        public int OnStateChanged(EnumStateMachine<EInteractionState>.StateChangedEventPayload payload)
         {
             switch (payload.newState)
             {
-                case ECardState.NotInPlay:
-                case ECardState.InDeck:
-                case ECardState.InHand:
-                case ECardState.PlayedToBoard:
+                case EInteractionState.Idle:
+                case EInteractionState.Hovered:
+                    //Apply hovered offset
+                    SetDesiredOffset(Vector3.up * yMoveOnHover, moveTimeDeckToHand);
                     cardViewModel.SetBorderVisibility(false);
                     break;
-                case ECardState.SelectedInHand:
+                case EInteractionState.Selected:
                     cardViewModel.SetBorderVisibility(true);
                     break;
             }
 
             return 0;
+        }
+
+        public float GetMoveSpeedFromContext(ECardMoveContext context)
+        {
+            float moveTime = noContextMoveToTime;
+            switch (context)
+            {
+                case ECardMoveContext.None:
+                    moveTime = noContextMoveToTime;
+                    break;
+                case ECardMoveContext.DeckToHand:
+                    moveTime = moveTimeDeckToHand;
+                    break;
+                case ECardMoveContext.HandToBoard:
+                    moveTime = moveTimeHandToBoard;
+                    break;
+                case ECardMoveContext.HandToHand:
+                    moveTime = moveTimeHandToHand;
+                    break;
+            }
+
+            return moveTime;
         }
     }
 }
