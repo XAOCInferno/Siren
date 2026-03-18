@@ -1,11 +1,13 @@
+using Behaviours;
 using Gameplay.Card;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Utils.StateMachine;
 
 namespace Gameplay.Tile
 {
-    public class TileLogic : Behaviours.MoveableObject
+    public class TileLogic : MonoBehaviour, IStateObject<ETileState>
     {
         [SerializeField] protected float yMoveOnHover = 0.5f;
         [SerializeField] protected float moveTime = 0.2f;
@@ -13,11 +15,15 @@ namespace Gameplay.Tile
         protected Vector3 startingPos = Vector3.zero;
 
         protected TileObject tileObject;
+        protected MoveableObject moveableObject;
 
         private void Awake()
         {
             tileObject = gameObject.GetComponent<TileObject>();
             Assert.NotNull(tileObject);
+            moveableObject = GetComponent(typeof(MoveableObject)) as MoveableObject;
+            Assert.NotNull(moveableObject);
+            ListenToStateChangedEvent();
         }
 
         private void Start()
@@ -25,10 +31,30 @@ namespace Gameplay.Tile
             startingPos = transform.position;
         }
 
+        public void ListenToStateChangedEvent()
+        {
+            tileObject.GetState().GetStateMachine().ListenToStateChangedCallback(this);
+        }
+
+        public int OnStateChanged(EnumStateMachine<ETileState>.StateChangedEventPayload payload)
+        {
+            switch (payload.newState)
+            {
+                case ETileState.OccupiedByPiece:
+                    OnTileOccupied();
+                    break;
+            }
+
+            return 0;
+        }
+
         //Not called directly on this object, requires 1 or more TileInputTrigger that will inform this
         public void OnPointerEnter(PointerEventData eventData)
         {
-            MoveToLocation(startingPos + (Vector3.up * yMoveOnHover), moveTime);
+            if (!tileObject.GetState().GetIsOccupiedByPiece())
+            {
+                moveableObject.MoveToLocation(startingPos + (Vector3.up * yMoveOnHover), moveTime);
+            }
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -48,7 +74,17 @@ namespace Gameplay.Tile
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            MoveToLocation(startingPos, moveTime);
+            MoveToIdlePosition();
+        }
+
+        protected void OnTileOccupied()
+        {
+            MoveToIdlePosition();
+        }
+
+        protected void MoveToIdlePosition()
+        {
+            moveableObject.MoveToLocation(startingPos, moveTime);
         }
     }
 }

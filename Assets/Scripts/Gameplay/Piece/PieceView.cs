@@ -43,7 +43,7 @@ namespace Gameplay.Piece
                 case EPieceState.NotInPlay:
                     pieceMeshObject.SetActive(false);
                     break;
-                case EPieceState.OnBoard:
+                case EPieceState.IdleOnBoard:
                     pieceMeshObject.SetActive(true);
                     break;
             }

@@ -32,7 +32,7 @@ namespace Gameplay.Piece
 
         public override void SetActive()
         {
-            _state.GetStateMachine().SetState(EPieceState.OnBoard);
+            _state.GetStateMachine().SetState(EPieceState.IdleOnBoard);
         }
 
         public override void SetInActive()
@@ -47,7 +47,7 @@ namespace Gameplay.Piece
                 case EPieceState.NotInPlay:
                     gameObject.SetActive(false);
                     break;
-                case EPieceState.OnBoard:
+                case EPieceState.IdleOnBoard:
                     gameObject.SetActive(true);
                     break;
             }

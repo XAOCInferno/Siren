@@ -11,13 +11,13 @@ namespace Behaviours
         Completed,
     }
 
-    public abstract class MoveableObject : MonoBehaviour
+    public class MoveableObject : MonoBehaviour
     {
         private IEnumerator _currentSmoothLerpCoroutine;
 
         protected Func<EMoveCompleteCallbackType, int> moveCompleteCallback;
 
-        protected void MoveToLocation(Vector3 location, float duration)
+        public void MoveToLocation(Vector3 location, float duration)
         {
             //End last move, if any
             CancelMove();
@@ -27,7 +27,7 @@ namespace Behaviours
             StartCoroutine(_currentSmoothLerpCoroutine);
         }
 
-        protected void MoveToLocation(Vector3 location, float duration,
+        public void MoveToLocation(Vector3 location, float duration,
             [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
             //End last move, if any
@@ -58,13 +58,7 @@ namespace Behaviours
             OnMoveComplete();
         }
 
-        protected void OnMoveComplete()
-        {
-            moveCompleteCallback?.Invoke(EMoveCompleteCallbackType.Completed);
-            moveCompleteCallback = null;
-        }
-
-        protected void CancelMove()
+        public void CancelMove()
         {
             //End coroutine
             if (_currentSmoothLerpCoroutine != null)
@@ -74,6 +68,12 @@ namespace Behaviours
 
             //Call callback
             moveCompleteCallback?.Invoke(EMoveCompleteCallbackType.EndedEarly);
+        }
+
+        protected void OnMoveComplete()
+        {
+            moveCompleteCallback?.Invoke(EMoveCompleteCallbackType.Completed);
+            moveCompleteCallback = null;
         }
     }
 }

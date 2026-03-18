@@ -390,7 +390,7 @@ namespace Gameplay
             //Set State
             BoardSystem<PieceLogic>.SetItemOnGrid(payload.gridCoordinates, pieceLogic);
             pieceLogic.SetGridLocation(payload.gridCoordinates);
-            piecePooledObject.GetComponent<PieceState>().GetStateMachine().SetState(EPieceState.OnBoard);
+            piecePooledObject.GetComponent<PieceState>().GetStateMachine().SetState(EPieceState.IdleOnBoard);
         }
     }
 }

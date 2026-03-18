@@ -5,28 +5,33 @@ using Utils.StateMachine;
 
 namespace Gameplay.Tile
 {
+    public enum ETileState
+    {
+        Idle,
+        OccupiedByPiece
+    }
+
     public class TileState : MonoBehaviour
     {
-        protected bool isOccupiedByPiece = false;
         [CanBeNull] protected PieceLogic occupiedByPieceLogic = null;
         private Vector2Int _gridLocation;
 
-        private readonly EnumStateMachine<EPieceState> _stateMachine = new();
-        public EnumStateMachine<EPieceState> GetStateMachine() => _stateMachine;
+        private readonly EnumStateMachine<ETileState> _stateMachine = new();
+        public EnumStateMachine<ETileState> GetStateMachine() => _stateMachine;
 
         public void SetOccupier(PieceLogic pieceLogic)
         {
-            isOccupiedByPiece = true;
             occupiedByPieceLogic = pieceLogic;
+            _stateMachine.SetState(ETileState.OccupiedByPiece);
         }
 
         public void ClearOccupier()
         {
-            isOccupiedByPiece = false;
             occupiedByPieceLogic = null;
+            _stateMachine.SetState(ETileState.Idle);
         }
-        
-        public bool GetIsOccupiedByPiece() => isOccupiedByPiece;
+
+        public bool GetIsOccupiedByPiece() => _stateMachine.GetState() == ETileState.OccupiedByPiece;
 
         public void SetGridLocation(Vector2Int location)
         {

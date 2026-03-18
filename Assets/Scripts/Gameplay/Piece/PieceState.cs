@@ -6,7 +6,7 @@ namespace Gameplay.Piece
     public enum EPieceState
     {
         NotInPlay = 0,
-        OnBoard,
+        IdleOnBoard,
     }
 
     public class PieceState : MonoBehaviour

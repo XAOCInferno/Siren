@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 5159534283349838675}
   - component: {fileID: 6962922237016810732}
   - component: {fileID: 5639481704920259872}
+  - component: {fileID: 4201157541950818660}
   m_Layer: 0
   m_Name: Tile
   m_TagString: Untagged
@@ -118,6 +119,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34dc1ba3cf3e194bb9572a46ddec910, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile.TileView
+--- !u!114 &4201157541950818660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1323605484077418888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8edc710a291c46d438644ebc587e8752, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Behaviours.MoveableObject
 --- !u!1 &2259781113972826135
 GameObject:
   m_ObjectHideFlags: 0
