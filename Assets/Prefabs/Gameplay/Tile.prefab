@@ -40,6 +40,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3499795091299824725}
+  - component: {fileID: 7070803676324236410}
+  - component: {fileID: 5159534283349838675}
+  - component: {fileID: 6962922237016810732}
+  - component: {fileID: 5639481704920259872}
   m_Layer: 0
   m_Name: Tile
   m_TagString: Untagged
@@ -63,6 +67,57 @@ Transform:
   - {fileID: 7180299493379412508}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7070803676324236410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1323605484077418888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28a7394a3c4b9504296280a3a0bf3337, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile.TileObject
+  pieceConnectionMkr: {fileID: 135938491506614730}
+--- !u!114 &5159534283349838675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1323605484077418888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15d93984989d65547b1f89f32a4fcf15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile.TileLogic
+  yMoveOnHover: 0.5
+  moveTime: 0.2
+--- !u!114 &6962922237016810732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1323605484077418888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 287ec4d7719a34d4eb475e4df9a5a1a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile.TileState
+--- !u!114 &5639481704920259872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1323605484077418888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a34dc1ba3cf3e194bb9572a46ddec910, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile.TileView
 --- !u!1 &2259781113972826135
 GameObject:
   m_ObjectHideFlags: 0
@@ -186,9 +241,9 @@ GameObject:
   - component: {fileID: 7180299493379412508}
   - component: {fileID: 42946805177399314}
   - component: {fileID: 7204412218810026538}
-  - component: {fileID: 3992435664107424140}
+  - component: {fileID: 2807242525037170376}
   m_Layer: 0
-  m_Name: TileController
+  m_Name: TileCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -225,7 +280,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -258,7 +313,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &3992435664107424140
+--- !u!114 &2807242525037170376
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -267,12 +322,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 4047844342079418633}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15d93984989d65547b1f89f32a4fcf15, type: 3}
+  m_Script: {fileID: 11500000, guid: d16ad65184991454ea361444570aa9e5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile
-  pieceConnectionMkr: {fileID: 135938491506614730}
-  yMoveOnHover: 0.5
-  moveTime: 0.2
+  m_EditorClassIdentifier: '::'
+  tileObject: {fileID: 7070803676324236410}
 --- !u!1 &6085225239089198172
 GameObject:
   m_ObjectHideFlags: 0

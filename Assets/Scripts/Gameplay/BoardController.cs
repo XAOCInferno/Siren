@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Debug;
 using Gameplay.Piece;
+using Gameplay.Tile;
 using Global;
 using JetBrains.Annotations;
 using NUnit.Framework;
@@ -265,7 +266,7 @@ namespace Gameplay
             }
 
             //Create tiles array
-            BoardSystem<Tile>.SetGridSize(boardWidth, boardHeight);
+            BoardSystem<TileObject>.SetGridSize(boardWidth, boardHeight);
             BoardSystem<PieceLogic>.SetGridSize(boardWidth, boardHeight);
 
             //Iterate over and assign tiles to array
@@ -283,14 +284,14 @@ namespace Gameplay
                     transform.rotation, transform);
 
                 //Get Tile comp and save it, ensuring it is not null
-                Tile tile = tileObject.GetComponentInChildren<Tile>();
+                TileObject tile = tileObject.GetComponentInChildren<TileObject>();
                 Assert.NotNull(tile);
 
                 //Set grid location on tile
-                tile.SetGridLocation(new Vector2Int(currentX, currentY));
+                tile.GetState().SetGridLocation(new Vector2Int(currentX, currentY));
 
                 //Add to data
-                BoardSystem<Tile>.SetItemOnGrid(gridCoordinates, tile);
+                BoardSystem<TileObject>.SetItemOnGrid(gridCoordinates, tile);
 
                 //Set scale
                 Transform tileTransform = tileObject.GetComponent<Transform>();
@@ -323,7 +324,7 @@ namespace Gameplay
         protected void OnOrderPlacePieceOnBoard(object sender, BoardEvents.OrderPlacePieceOnBoardPayload payload)
         {
             //Get tile we wish to place on
-            Tile tile = BoardSystem<Tile>.GetItemOnGrid(payload.gridCoordinates);
+            TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(payload.gridCoordinates);
 
             //Check tile is present
             if (!tile)
@@ -368,7 +369,7 @@ namespace Gameplay
             pieceTransform.localScale = new Vector3(boardScale, boardScale, boardScale);
 
             //Parent & offset
-            Tile tileParent = BoardSystem<Tile>.GetItemOnGrid(payload.gridCoordinates);
+            TileObject tileParent = BoardSystem<TileObject>.GetItemOnGrid(payload.gridCoordinates);
             if (!tileParent)
             {
                 //Err: missing tile
@@ -378,7 +379,7 @@ namespace Gameplay
             }
 
             //Set occupied
-            tileParent.SetOccupier(pieceLogic);
+            tileParent.GetState().SetOccupier(pieceLogic);
 
             pieceTransform.parent = tileParent.GetComponent<Transform>();
             pieceTransform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +

@@ -1,6 +1,7 @@
 using System;
 using Behaviours;
 using Debug;
+using Gameplay.Tile;
 using Global;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -181,7 +182,7 @@ namespace Gameplay.Card
             _state.GetStateMachine().SetState(ECardState.PlayedToBoard);
 
             //Try get tile
-            Tile tile = BoardSystem<Tile>.GetItemOnGrid(atGridLocation);
+            TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(atGridLocation);
             if (!tile)
             {
                 //No tile, so just try to play (though this shouldn't happen)
