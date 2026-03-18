@@ -4,6 +4,7 @@ using Debug;
 using Gameplay.Tile;
 using Global;
 using JetBrains.Annotations;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -37,25 +38,20 @@ namespace Gameplay.Card
         [SerializeField] protected float noContextMoveToTime = 0.2f;
 
         private CardData _cardData;
-        private CardState _state;
+        private CardObject _cardObject;
 
         protected Vector2Int desiredGridLocation = Vector2Int.zero;
 
         private void Awake()
         {
+            _cardObject = gameObject.GetComponent<CardObject>();
+            Assert.NotNull(_cardObject);
             ListenToStateChangedEvent();
         }
 
         public void ListenToStateChangedEvent()
         {
-            _state = GetComponent<CardState>();
-            if (!_state)
-            {
-                DebugSystem.Error("CardState not found");
-                return;
-            }
-
-            _state.GetStateMachine().ListenToStateChangedCallback(this);
+            _cardObject.GetState().GetStateMachine().ListenToStateChangedCallback(this);
         }
 
         public void SetCardData(CardData newCardData)
@@ -63,7 +59,7 @@ namespace Gameplay.Card
             //Our Data
             _cardData = newCardData;
             //Set on VM
-            _state.GetView().SetViewModelData(newCardData.GetViewData());
+            _cardObject.GetView().SetViewModelData(newCardData.GetViewData());
         }
 
         public CardData GetCardData() => _cardData;
@@ -76,7 +72,7 @@ namespace Gameplay.Card
 
         public override void SetInActive()
         {
-            _state.GetStateMachine().SetState(ECardState.NotInPlay);
+            _cardObject.GetState().GetStateMachine().SetState(ECardState.NotInPlay);
         }
 
         public int OnStateChanged(EnumStateMachine<ECardState>.StateChangedEventPayload payload)
@@ -99,18 +95,18 @@ namespace Gameplay.Card
 
         public void MoveToPosition(Vector3 position)
         {
-            _state.GetView().SetDesiredPosition(position, noContextMoveToTime);
+            _cardObject.GetView().SetDesiredPosition(position, noContextMoveToTime);
         }
 
         public void MoveToPosition(Vector3 position, ECardMoveContext context)
         {
-            _state.GetView().SetDesiredPosition(position, GetMoveSpeedFromContext(context));
+            _cardObject.GetView().SetDesiredPosition(position, GetMoveSpeedFromContext(context));
         }
 
         public void MoveToPosition(Vector3 position, ECardMoveContext context,
             [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
-            _state.GetView().SetDesiredPosition(position, GetMoveSpeedFromContext(context), callback);
+            _cardObject.GetView().SetDesiredPosition(position, GetMoveSpeedFromContext(context), callback);
         }
 
         protected float GetMoveSpeedFromContext(ECardMoveContext context)
@@ -135,17 +131,17 @@ namespace Gameplay.Card
         //TODO: moveTime dynamic?
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (_state.GetStateMachine().GetState() == ECardState.InHand)
+            if (_cardObject.GetState().GetStateMachine().GetState() == ECardState.InHand)
             {
-                _state.GetView().SetDesiredOffset(Vector3.up * yMoveOnHover, moveTimeDeckToHand);
+                _cardObject.GetView().SetDesiredOffset(Vector3.up * yMoveOnHover, moveTimeDeckToHand);
             }
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            if (_state.GetStateMachine().GetState() == ECardState.InHand)
+            if (_cardObject.GetState().GetStateMachine().GetState() == ECardState.InHand)
             {
-                _state.GetView().SetDesiredOffset(Vector3.zero, moveTimeDeckToHand);
+                _cardObject.GetView().SetDesiredOffset(Vector3.zero, moveTimeDeckToHand);
             }
         }
 
@@ -153,7 +149,7 @@ namespace Gameplay.Card
         {
             //TODO: Can activate calculation here
             bool canActivate = true;
-            canActivate &= _state.GetStateMachine().GetState() == ECardState.InHand;
+            canActivate &= _cardObject.GetState().GetStateMachine().GetState() == ECardState.InHand;
             canActivate &= CardService.localCardLogicBeingPlayed != this;
             if (!canActivate)
             {
@@ -161,14 +157,14 @@ namespace Gameplay.Card
             }
 
             DebugSystem.Log($"Card {gameObject.name} is being played from hand");
-            _state.GetStateMachine().SetState(ECardState.SelectedInHand);
+            _cardObject.GetState().GetStateMachine().SetState(ECardState.SelectedInHand);
             CardService.SetCardBeingPlayed(this);
         }
 
         public void CancelClick()
         {
-            _state.GetStateMachine().SetState(ECardState.InHand);
-            _state.GetView().SetDesiredOffset(Vector3.zero, moveTimeHandToHand);
+            _cardObject.GetState().GetStateMachine().SetState(ECardState.InHand);
+            _cardObject.GetView().SetDesiredOffset(Vector3.zero, moveTimeHandToHand);
         }
 
         public void PlayCard(Vector2Int atGridLocation)
@@ -179,7 +175,7 @@ namespace Gameplay.Card
             desiredGridLocation = atGridLocation;
 
             //Change state to being played to the board
-            _state.GetStateMachine().SetState(ECardState.PlayedToBoard);
+            _cardObject.GetState().GetStateMachine().SetState(ECardState.PlayedToBoard);
 
             //Try get tile
             TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(atGridLocation);

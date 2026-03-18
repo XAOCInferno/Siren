@@ -351,11 +351,10 @@ namespace Gameplay
                 return;
             }
 
-            //Get piece
-            PieceLogic pieceLogic = piecePooledObject.GetComponent<PieceLogic>();
-
+            //Get piece  mkr
+            Transform connectionMkr = piecePooledObject.GetComponent<PieceObject>().GetTileConnectionMkr();
             //Check connection pieces are valid
-            if (!tile.GetPieceConnectionMkr() || !pieceLogic.GetTileConnectionMkr())
+            if (!tile.GetPieceConnectionMkr() || !connectionMkr)
             {
                 DebugSystem.Error(
                     $"Cannot place piece on location {payload.gridCoordinates.ToString()} due to missing connection mkr on either the piece or the tile, check prefabs");
@@ -363,6 +362,9 @@ namespace Gameplay
             }
 
             //Now everything has been validated, add it
+
+            //Logic
+            PieceLogic pieceLogic = piecePooledObject.GetComponent<PieceLogic>();
 
             //Set scale
             Transform pieceTransform = pieceLogic.GetComponent<Transform>();
@@ -383,7 +385,7 @@ namespace Gameplay
 
             pieceTransform.parent = tileParent.GetComponent<Transform>();
             pieceTransform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +
-                                           (pieceLogic.GetTileConnectionMkr().transform.localPosition * -1);
+                                           (connectionMkr.transform.localPosition * -1);
 
             //Set State
             BoardSystem<PieceLogic>.SetItemOnGrid(payload.gridCoordinates, pieceLogic);

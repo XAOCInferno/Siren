@@ -8,11 +8,8 @@ namespace Gameplay.Piece
     //TODO: Grid location inheritable? Maybe an interface for something that can be placed on the board
     public class PieceLogic : PooledObject, IStateObject<EPieceState>
     {
-        [SerializeField] private Transform tileConnectionMkr;
         private PieceState _state;
         private readonly PieceData _pieceData;
-
-        public Transform GetTileConnectionMkr() => tileConnectionMkr;
 
         private Vector2Int _gridLocation;
 

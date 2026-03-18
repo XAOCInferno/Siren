@@ -40,6 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6193927212131786125}
+  - component: {fileID: 6891145854463075511}
   - component: {fileID: 3813222921458950428}
   - component: {fileID: 1163622125027051723}
   - component: {fileID: 1637445002832472595}
@@ -68,6 +69,19 @@ Transform:
   - {fileID: 4999560461677630787}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6891145854463075511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6379527258099078197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6537698eca69a88428c7c8c886b0ef4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Piece.PieceObject
+  tileConnectionMkr: {fileID: 9167560397500044620}
 --- !u!114 &3813222921458950428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -106,7 +120,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 715acd1c707139c4fa5452c9374789df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Piece
-  tileConnectionMkr: {fileID: 9167560397500044620}
 --- !u!65 &677679241249238265
 BoxCollider:
   m_ObjectHideFlags: 0
