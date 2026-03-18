@@ -267,7 +267,7 @@ namespace Gameplay
 
             //Create tiles array
             BoardSystem<TileObject>.SetGridSize(boardWidth, boardHeight);
-            BoardSystem<PieceLogic>.SetGridSize(boardWidth, boardHeight);
+            BoardSystem<PieceObject>.SetGridSize(boardWidth, boardHeight);
 
             //Iterate over and assign tiles to array
             int numberOfTiles = boardWidth * boardHeight;
@@ -335,7 +335,7 @@ namespace Gameplay
             }
 
             //Check location is free
-            if (BoardSystem<PieceLogic>.GetItemOnGrid(payload.gridCoordinates))
+            if (BoardSystem<PieceObject>.GetItemOnGrid(payload.gridCoordinates))
             {
                 DebugSystem.Error(
                     $"Cannot place piece on location {payload.gridCoordinates.ToString()} as this location is already occupied");
@@ -352,7 +352,8 @@ namespace Gameplay
             }
 
             //Get piece  mkr
-            Transform connectionMkr = piecePooledObject.GetComponent<PieceObject>().GetTileConnectionMkr();
+            PieceObject pieceObject = piecePooledObject.GetComponent<PieceObject>();
+            Transform connectionMkr = pieceObject.GetTileConnectionMkr();
             //Check connection pieces are valid
             if (!tile.GetPieceConnectionMkr() || !connectionMkr)
             {
@@ -388,9 +389,9 @@ namespace Gameplay
                                            (connectionMkr.transform.localPosition * -1);
 
             //Set State
-            BoardSystem<PieceLogic>.SetItemOnGrid(payload.gridCoordinates, pieceLogic);
-            pieceLogic.SetGridLocation(payload.gridCoordinates);
-            piecePooledObject.GetComponent<PieceState>().GetStateMachine().SetState(EPieceState.IdleOnBoard);
+            BoardSystem<PieceObject>.SetItemOnGrid(payload.gridCoordinates, pieceObject);
+            pieceObject.GetState().SetGridLocation(payload.gridCoordinates);
+            pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
         }
     }
 }

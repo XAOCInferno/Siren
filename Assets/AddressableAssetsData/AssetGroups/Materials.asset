@@ -10,18 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Default Local Group
+  m_Name: Materials
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
-  m_GroupName: Default Local Group
-  m_GUID: 3ea94b1347bb79e438622a07b7dcd22b
+  m_GroupName: Materials
+  m_GUID: 7e0ff430dde57d34c9936ac4809876b7
   m_SerializeEntries:
-  - m_GUID: 6228212b65480ed4182ac80e38a84834
-    m_Address: Card.prefab
+  - m_GUID: 0398f7a4d762f4041b8fc3c2e4bd1e1b
+    m_Address: PieceHoverMaterial.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 8fccc8b3feb62824bb14db2120dc7f75
-    m_Address: Piece.prefab
+  - m_GUID: 59fdf43c5c09a7946ad9289b67a9900f
+    m_Address: PieceIdleMaterial.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 916ad3528696b454dbbcb7014c0470eb
+    m_Address: PieceSelectedMaterial.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -29,5 +34,5 @@ MonoBehaviour:
   m_Settings: {fileID: 11400000, guid: 736b704427ee95a4da58cdbd54d76ab4, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 2cf0025fe50b22c4aa5275744c127a02, type: 2}
-    - {fileID: 11400000, guid: a2b40d7a77c38d2419ee0325432be84b, type: 2}
+    - {fileID: 11400000, guid: 8fb3f2ceef97a984ea798e76a441ca93, type: 2}
+    - {fileID: 11400000, guid: eee58ab68d6c0264fbd3d87dfd4cec90, type: 2}

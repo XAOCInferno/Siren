@@ -1,53 +1,47 @@
-using Debug;
-using UnityEngine;
+using NUnit.Framework;
+using UnityEngine.EventSystems;
 using Utils;
 using Utils.StateMachine;
 
 namespace Gameplay.Piece
 {
     //TODO: Grid location inheritable? Maybe an interface for something that can be placed on the board
-    public class PieceLogic : PooledObject, IStateObject<EPieceState>
+    public class PieceLogic : PooledObject, IStateObject<EPieceLogicState>, IPointerEnterHandler, IPointerExitHandler,
+        IPointerClickHandler
     {
-        private PieceState _state;
+        private PieceObject _pieceObject;
         private readonly PieceData _pieceData;
-
-        private Vector2Int _gridLocation;
 
         private void Awake()
         {
+            _pieceObject = GetComponent<PieceObject>();
+            Assert.NotNull(_pieceObject);
             ListenToStateChangedEvent();
         }
 
         public void ListenToStateChangedEvent()
         {
-            _state = GetComponent<PieceState>();
-            if (!_state)
-            {
-                DebugSystem.Error("CardState not found");
-                return;
-            }
-
-            _state.GetStateMachine().ListenToStateChangedCallback(this);
+            _pieceObject.GetState().GetLogicStateMachine().ListenToStateChangedCallback(this);
         }
 
         public override void SetActive()
         {
-            _state.GetStateMachine().SetState(EPieceState.IdleOnBoard);
+            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
         }
 
         public override void SetInActive()
         {
-            _state.GetStateMachine().SetState(EPieceState.NotInPlay);
+            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.NotInPlay);
         }
 
-        public int OnStateChanged(EnumStateMachine<EPieceState>.StateChangedEventPayload payload)
+        public int OnStateChanged(EnumStateMachine<EPieceLogicState>.StateChangedEventPayload payload)
         {
             switch (payload.newState)
             {
-                case EPieceState.NotInPlay:
+                case EPieceLogicState.NotInPlay:
                     gameObject.SetActive(false);
                     break;
-                case EPieceState.IdleOnBoard:
+                case EPieceLogicState.IdleOnBoard:
                     gameObject.SetActive(true);
                     break;
             }
@@ -55,9 +49,29 @@ namespace Gameplay.Piece
             return 0;
         }
 
-        public void SetGridLocation(Vector2Int location)
+        //IPointer Events
+        public void OnPointerEnter(PointerEventData eventData)
         {
-            _gridLocation = location;
+            //TODO: If can select...
+            if (_pieceObject.GetState().GetLogicStateMachine().GetState() != EPieceLogicState.SelectedOnBoard)
+            {
+                _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Hovered);
+            }
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            //TODO: If can select...
+            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.SelectedOnBoard);
+            _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Selected);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (_pieceObject.GetState().GetLogicStateMachine().GetState() != EPieceLogicState.SelectedOnBoard)
+            {
+                _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Idle);
+            }
         }
     }
 }
