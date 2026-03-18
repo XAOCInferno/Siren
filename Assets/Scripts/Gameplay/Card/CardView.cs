@@ -46,7 +46,7 @@ namespace Gameplay.Card
         }
 
         public void SetDesiredPosition(Vector3 position, float moveTime,
-            [CanBeNull] Func<MoveCompleteCallbackType, int> callback)
+            [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
             desiredPosition = position;
             MoveToLocation(desiredPosition + desiredOffset, moveTime, callback);

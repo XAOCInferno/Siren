@@ -107,7 +107,7 @@ namespace Gameplay.Card
         }
 
         public void MoveToPosition(Vector3 position, ECardMoveContext context,
-            [CanBeNull] Func<MoveCompleteCallbackType, int> callback)
+            [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
             _state.GetView().SetDesiredPosition(position, GetMoveSpeedFromContext(context), callback);
         }
@@ -186,7 +186,7 @@ namespace Gameplay.Card
             {
                 //No tile, so just try to play (though this shouldn't happen)
                 DebugSystem.Error($"No tile found at location {atGridLocation} so cannot move card to it!");
-                FinishPlayCard(MoveCompleteCallbackType.Completed);
+                FinishPlayCard(EMoveCompleteCallbackType.Completed);
                 return;
             }
 
@@ -194,7 +194,7 @@ namespace Gameplay.Card
             MoveToPosition(tile.transform.position, ECardMoveContext.HandToBoard, FinishPlayCard);
         }
 
-        protected int FinishPlayCard(MoveCompleteCallbackType callbackType)
+        protected int FinishPlayCard(EMoveCompleteCallbackType callbackType)
         {
             //Play
             BoardEvents.InvokeOnOrderPlacePieceOnBoard(this,

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Behaviours
 {
-    public enum MoveCompleteCallbackType
+    public enum EMoveCompleteCallbackType
     {
         EndedEarly = 0,
         Completed,
@@ -15,7 +15,7 @@ namespace Behaviours
     {
         private IEnumerator _currentSmoothLerpCoroutine;
 
-        protected Func<MoveCompleteCallbackType, int> moveCompleteCallback;
+        protected Func<EMoveCompleteCallbackType, int> moveCompleteCallback;
 
         protected void MoveToLocation(Vector3 location, float duration)
         {
@@ -28,7 +28,7 @@ namespace Behaviours
         }
 
         protected void MoveToLocation(Vector3 location, float duration,
-            [CanBeNull] Func<MoveCompleteCallbackType, int> callback)
+            [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
             //End last move, if any
             CancelMove();
@@ -60,7 +60,7 @@ namespace Behaviours
 
         protected void OnMoveComplete()
         {
-            moveCompleteCallback?.Invoke(MoveCompleteCallbackType.Completed);
+            moveCompleteCallback?.Invoke(EMoveCompleteCallbackType.Completed);
             moveCompleteCallback = null;
         }
 
@@ -73,7 +73,7 @@ namespace Behaviours
             }
 
             //Call callback
-            moveCompleteCallback?.Invoke(MoveCompleteCallbackType.EndedEarly);
+            moveCompleteCallback?.Invoke(EMoveCompleteCallbackType.EndedEarly);
         }
     }
 }
