@@ -5,33 +5,46 @@ using Utils.StateMachine;
 
 namespace Gameplay.Tile
 {
-    public enum ETileState
+    public enum ETileLogicState
     {
+        None = 0,
         Idle,
         OccupiedByPiece
+    }
+    
+    public enum ETileViewState
+    {
+        None = 0,
+        Idle,
+        Hovered,
+        PreviewMove,
+        PreviewAttack
     }
 
     public class TileState : MonoBehaviour
     {
+        private readonly EnumStateMachine<ETileLogicState> _logicStateMachine = new();
+        public EnumStateMachine<ETileLogicState> GetLogicStateMachine() => _logicStateMachine;
+        private readonly EnumStateMachine<ETileViewState> _viewStateMachine = new();
+        public EnumStateMachine<ETileViewState> GetViewStateMachine() => _viewStateMachine;
+        
+        
         [CanBeNull] protected PieceLogic occupiedByPieceLogic = null;
         private Vector2Int _gridLocation;
-
-        private readonly EnumStateMachine<ETileState> _stateMachine = new();
-        public EnumStateMachine<ETileState> GetStateMachine() => _stateMachine;
 
         public void SetOccupier(PieceLogic pieceLogic)
         {
             occupiedByPieceLogic = pieceLogic;
-            _stateMachine.SetState(ETileState.OccupiedByPiece);
+            _logicStateMachine.SetState(ETileLogicState.OccupiedByPiece);
         }
 
         public void ClearOccupier()
         {
             occupiedByPieceLogic = null;
-            _stateMachine.SetState(ETileState.Idle);
+            _logicStateMachine.SetState(ETileLogicState.Idle);
         }
 
-        public bool GetIsOccupiedByPiece() => _stateMachine.GetState() == ETileState.OccupiedByPiece;
+        public bool GetIsOccupiedByPiece() => _logicStateMachine.GetState() == ETileLogicState.OccupiedByPiece;
 
         public void SetGridLocation(Vector2Int location)
         {

@@ -1,4 +1,4 @@
-using Behaviours;
+using System.Threading.Tasks;
 using Gameplay.Card;
 using NUnit.Framework;
 using UnityEngine;
@@ -7,41 +7,33 @@ using Utils.StateMachine;
 
 namespace Gameplay.Tile
 {
-    public class TileLogic : MonoBehaviour, IStateObject<ETileState>
+    public class TileLogic : MonoBehaviour, IStateObject<ETileLogicState>
     {
-        [SerializeField] protected float yMoveOnHover = 0.5f;
-        [SerializeField] protected float moveTime = 0.2f;
-
-        protected Vector3 startingPos = Vector3.zero;
-
         protected TileObject tileObject;
-        protected MoveableObject moveableObject;
 
         private void Awake()
         {
             tileObject = gameObject.GetComponent<TileObject>();
             Assert.NotNull(tileObject);
-            moveableObject = GetComponent(typeof(MoveableObject)) as MoveableObject;
-            Assert.NotNull(moveableObject);
             ListenToStateChangedEvent();
         }
 
-        private void Start()
+        public async Task Init()
         {
-            startingPos = transform.position;
+            //..Nothing
         }
 
         public void ListenToStateChangedEvent()
         {
-            tileObject.GetState().GetStateMachine().ListenToStateChangedCallback(this);
+            tileObject.GetState().GetLogicStateMachine().ListenToStateChangedCallback(this);
         }
 
-        public int OnStateChanged(EnumStateMachine<ETileState>.StateChangedEventPayload payload)
+        public int OnStateChanged(EnumStateMachine<ETileLogicState>.StateChangedEventPayload payload)
         {
             switch (payload.newState)
             {
-                case ETileState.OccupiedByPiece:
-                    OnTileOccupied();
+                case ETileLogicState.OccupiedByPiece:
+                    tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
                     break;
             }
 
@@ -53,7 +45,13 @@ namespace Gameplay.Tile
         {
             if (!tileObject.GetState().GetIsOccupiedByPiece())
             {
-                moveableObject.MoveToLocation(startingPos + (Vector3.up * yMoveOnHover), moveTime);
+                EnumStateMachine<ETileViewState> viewStateMachine = tileObject.GetState().GetViewStateMachine();
+                if (viewStateMachine.GetState() != ETileViewState.Idle)
+                {
+                    return;
+                }
+
+                viewStateMachine.SetState(ETileViewState.Hovered);
             }
         }
 
@@ -74,17 +72,7 @@ namespace Gameplay.Tile
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            MoveToIdlePosition();
-        }
-
-        protected void OnTileOccupied()
-        {
-            MoveToIdlePosition();
-        }
-
-        protected void MoveToIdlePosition()
-        {
-            moveableObject.MoveToLocation(startingPos, moveTime);
+            tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
         }
     }
 }

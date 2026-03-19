@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Behaviours;
 using Debug;
 using Interaction;
@@ -29,6 +30,11 @@ namespace Gameplay.Card
         private void Awake()
         {
             ListenToStateChangedEvent();
+        }
+        
+        public async Task Init()
+        {
+            //..Does nothing
         }
 
         public void ListenToStateChangedEvent()

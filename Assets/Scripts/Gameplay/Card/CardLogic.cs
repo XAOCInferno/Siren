@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Behaviours;
 using Debug;
 using Gameplay.Tile;
@@ -43,6 +44,11 @@ namespace Gameplay.Card
             _cardObject = gameObject.GetComponent<CardObject>();
             Assert.NotNull(_cardObject);
             ListenToStateChangedEvent();
+        }
+
+        public async Task Init()
+        {
+            //..Does nothing
         }
 
         public void ListenToStateChangedEvent()
@@ -115,15 +121,15 @@ namespace Gameplay.Card
             //Where we will play to
             desiredGridLocation = atGridLocation;
 
-            //Change state to being played to the board
-            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.PlayedToBoard);
-
             //Try get tile
             TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(atGridLocation);
             Assert.NotNull(tile);
 
             //End interaction
             InteractionSystem.SetInteractable(this, false);
+            
+            //Change state to being played to the board
+            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.PlayedToBoard);
 
             //Move to, on completion play card
             MoveToPosition(tile.transform.position, ECardMoveContext.HandToBoard, FinishPlayCard);

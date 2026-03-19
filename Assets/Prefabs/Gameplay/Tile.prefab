@@ -93,8 +93,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15d93984989d65547b1f89f32a4fcf15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile.TileLogic
-  yMoveOnHover: 0.5
-  moveTime: 0.2
 --- !u!114 &6962922237016810732
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,6 +117,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a34dc1ba3cf3e194bb9572a46ddec910, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile.TileView
+  yMoveOnHover: 0.5
+  moveTime: 0.2
+  meshRenderers:
+  - {fileID: 2140969082836551240}
+  - {fileID: 949571162243481076}
 --- !u!114 &4201157541950818660
 MonoBehaviour:
   m_ObjectHideFlags: 0

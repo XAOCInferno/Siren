@@ -1,15 +1,16 @@
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Debug;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
+using Utils;
 using Utils.StateMachine;
 
 namespace Gameplay.Piece
 {
     public class PieceView : MonoBehaviour, IStateObject<EPieceLogicState>, IStateObject<EPieceViewState>
     {
-        private static readonly int Color1 = Shader.PropertyToID("_Color");
         [SerializeField] private Mesh pieceMesh;
         [SerializeField] private GameObject pieceMeshObject;
 
@@ -24,9 +25,6 @@ namespace Gameplay.Piece
             //All pieces must have a mesh
             Assert.NotNull(pieceMesh);
 
-            //Addressables
-            LoadAddressables();
-
             //Set mesh
             SetMesh(pieceMesh);
             _meshRenderer = pieceMeshObject.GetComponent<MeshRenderer>();
@@ -35,19 +33,47 @@ namespace Gameplay.Piece
             ListenToStateChangedEvent();
         }
 
-        private void LoadAddressables()
+        public async Task Init()
         {
-            //Load addressables
-            var loadHoverMaterial = Addressables.LoadAssetAsync<Material>(
-                "PieceHoverMaterial.mat");
-            var idleHoverMaterial = Addressables.LoadAssetAsync<Material>(
-                "PieceIdleMaterial.mat");
-            var selectedHoverMaterial = Addressables.LoadAssetAsync<Material>(
-                "PieceSelectedMaterial.mat");
-            //Results
-            loadHoverMaterial.Completed += h => { _materialMap.Add(EPieceViewState.Hovered, h.Result); };
-            idleHoverMaterial.Completed += h => { _materialMap.Add(EPieceViewState.Idle, h.Result); };
-            selectedHoverMaterial.Completed += h => { _materialMap.Add(EPieceViewState.Selected, h.Result); };
+            try
+            {
+                //Addressables
+                await LoadAddressables();
+            }
+            catch (Exception e)
+            {
+                DebugSystem.Error($"Failed to Init due to {e.Message}");
+                throw;
+            }
+        }
+
+        private async Task LoadAddressables()
+        {
+            try
+            {
+                //Load addressables
+                var loadIdleMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceIdle.mat");
+                var loadHoverMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceHover.mat");
+                var loadSelectedMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceSelected.mat");
+
+                //Results
+                await loadIdleMaterialTask;
+                Assert.NotNull(loadIdleMaterialTask.Result);
+                await loadHoverMaterialTask;
+                Assert.NotNull(loadHoverMaterialTask.Result);
+                await loadSelectedMaterialTask;
+                Assert.NotNull(loadSelectedMaterialTask.Result);
+
+                //Set in data
+                _materialMap.Add(EPieceViewState.Idle, loadIdleMaterialTask.Result);
+                _materialMap.Add(EPieceViewState.Hovered, loadHoverMaterialTask.Result);
+                _materialMap.Add(EPieceViewState.Selected, loadSelectedMaterialTask.Result);
+            }
+            catch (Exception e)
+            {
+                DebugSystem.Error($"Failed to load addressables due to {e.Message}");
+                throw;
+            }
         }
 
         public void ListenToStateChangedEvent()
@@ -99,29 +125,25 @@ namespace Gameplay.Piece
         protected void SetMesh(Mesh newMesh)
         {
             MeshFilter meshFilter = pieceMeshObject.GetComponent<MeshFilter>();
-            Assert.NotNull(meshFilter);
+            Assert.IsNotNull(meshFilter);
             meshFilter.mesh = newMesh;
         }
 
         public void SetHovered()
         {
-            Material mat = _materialMap[EPieceViewState.Hovered];
-            Assert.NotNull(mat);
+            if (!_materialMap.TryGetValue(EPieceViewState.Hovered, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
         }
 
         public void SetSelected()
         {
-            Material mat = _materialMap[EPieceViewState.Selected];
-            Assert.NotNull(mat);
+            if (!_materialMap.TryGetValue(EPieceViewState.Selected, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
         }
 
         public void SetIdle()
         {
-            Material mat = _materialMap[EPieceViewState.Idle];
-            Assert.NotNull(mat);
-            print(mat);
+            if (!_materialMap.TryGetValue(EPieceViewState.Idle, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
         }
     }

@@ -9,7 +9,7 @@ namespace Utils
         private TView _view;
         private TLogic _tileLogic;
 
-        public void Awake()
+        public virtual void Awake()
         {
             _view = GetComponent<TView>();
             _tileLogic = GetComponent<TLogic>();

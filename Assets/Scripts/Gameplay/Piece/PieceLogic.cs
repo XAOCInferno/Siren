@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Interaction;
 using NUnit.Framework;
 using UnityEngine.EventSystems;
@@ -21,6 +22,11 @@ namespace Gameplay.Piece
             ListenToStateChangedEvent();
         }
 
+        public async Task Init()
+        {
+            //..Nothing
+        }
+
         public void ListenToStateChangedEvent()
         {
             _pieceObject.GetState().GetLogicStateMachine().ListenToStateChangedCallback(this);
@@ -29,13 +35,13 @@ namespace Gameplay.Piece
         public override void SetActive()
         {
             InteractionSystem.SetInteractable(this, true);
-            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
+            InteractionSystem.SetIdle(this);
         }
 
         public override void SetInActive()
         {
             InteractionSystem.SetInteractable(this, false);
-            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.NotInPlay);
+            InteractionSystem.SetIdle(this);
         }
 
         public int OnStateChanged(EnumStateMachine<EPieceLogicState>.StateChangedEventPayload payload)
@@ -60,7 +66,6 @@ namespace Gameplay.Piece
             if (_pieceObject.GetState().GetLogicStateMachine().GetState() != EPieceLogicState.SelectedOnBoard &&
                 _pieceObject.GetState().interactable)
             {
-                print("TRYING TO HOVER");
                 InteractionSystem.SetHovered(this);
             }
         }

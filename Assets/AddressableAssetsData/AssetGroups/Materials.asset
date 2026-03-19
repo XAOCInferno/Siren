@@ -16,17 +16,17 @@ MonoBehaviour:
   m_GUID: 7e0ff430dde57d34c9936ac4809876b7
   m_SerializeEntries:
   - m_GUID: 0398f7a4d762f4041b8fc3c2e4bd1e1b
-    m_Address: PieceHoverMaterial.mat
+    m_Address: M_PieceHover.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 59fdf43c5c09a7946ad9289b67a9900f
-    m_Address: PieceIdleMaterial.mat
+    m_Address: M_PieceIdle.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 916ad3528696b454dbbcb7014c0470eb
-    m_Address: PieceSelectedMaterial.mat
+    m_Address: M_PieceSelected.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

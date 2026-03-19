@@ -7,7 +7,6 @@ using Global;
 using JetBrains.Annotations;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.Pool;
 using Utils;
 
 namespace Gameplay
@@ -34,6 +33,8 @@ namespace Gameplay
         {
             return new Vector2Int(_items.GetLength(0), _items.GetLength(1));
         }
+
+        public static T[,] GetAllItems() => _items;
 
         /// <summary>
         /// Gets the item at grid coordinates, or returns null if there is no item (or passed values are invalid)
@@ -256,7 +257,7 @@ namespace Gameplay
         /// <summary>
         /// Creates the board, filling it with tiles.
         /// </summary>
-        protected void CreateBoardLayout()
+        protected async void CreateBoardLayout()
         {
             //Ensure prefab is valid
             if (!tilePrefab)
@@ -286,6 +287,9 @@ namespace Gameplay
                 //Get Tile comp and save it, ensuring it is not null
                 TileObject tile = tileObject.GetComponentInChildren<TileObject>();
                 Assert.NotNull(tile);
+                await tile.Init();
+                tile.GetState().GetLogicStateMachine().SetState(ETileLogicState.Idle);
+                tile.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
 
                 //Set grid location on tile
                 tile.GetState().SetGridLocation(new Vector2Int(currentX, currentY));

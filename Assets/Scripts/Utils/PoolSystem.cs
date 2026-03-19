@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Debug;
 using JetBrains.Annotations;
 using Unity.VisualScripting;
@@ -106,11 +107,27 @@ namespace Utils
         {
             return _active.Count + _available.Count;
         }
+
+        //Further getters
+        public T[] GetActive()
+        {
+            return _active.ToArray();
+        }
+
+        public T[] GetAvailable()
+        {
+            return _available.ToArray();
+        }
+
+        public T[] GetAll()
+        {
+            return GetActive().Concat(GetAvailable()).ToArray();
+        }
     }
 
     public static class PoolSystem<T> where T : PooledObject
     {
-        private static readonly Pool<T> Pool = new Pool<T>();
+        private static readonly Pool<T> Pool = new();
         private static GameObject _templateToInstantiate;
         private static bool _isPoolReady;
 
