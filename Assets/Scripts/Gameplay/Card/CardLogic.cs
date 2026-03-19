@@ -46,7 +46,12 @@ namespace Gameplay.Card
         {
             _cardObject = gameObject.GetComponent<CardObject>();
             Assert.NotNull(_cardObject);
-            ListenToStateChangedEvent();
+            SubscribeToStateChangedEvent();
+        }
+
+        private void OnDestroy()
+        {
+            UnSubscribeToStateChangedEvent();
         }
 
         public async Task Init()
@@ -54,9 +59,13 @@ namespace Gameplay.Card
             //..Does nothing
         }
 
-        public void ListenToStateChangedEvent()
+        public void SubscribeToStateChangedEvent()
         {
-            _cardObject.GetState().GetLogicStateMachine().ListenToStateChangedCallback(this);
+            _cardObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
+        }
+        public void UnSubscribeToStateChangedEvent()
+        {
+            _cardObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
         public void SetCardData(CardData newCardData)

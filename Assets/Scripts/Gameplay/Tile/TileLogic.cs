@@ -17,7 +17,12 @@ namespace Gameplay.Tile
         {
             tileObject = gameObject.GetComponent<TileObject>();
             Assert.NotNull(tileObject);
-            ListenToStateChangedEvent();
+            SubscribeToStateChangedEvent();
+        }
+
+        private void OnDestroy()
+        {
+            UnSubscribeToStateChangedEvent();
         }
 
         public async Task Init()
@@ -25,9 +30,14 @@ namespace Gameplay.Tile
             //..Nothing
         }
 
-        public void ListenToStateChangedEvent()
+        public void SubscribeToStateChangedEvent()
         {
-            tileObject.GetState().GetLogicStateMachine().ListenToStateChangedCallback(this);
+            tileObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
+        }
+
+        public void UnSubscribeToStateChangedEvent()
+        {
+            tileObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
         public void OnStartAttackPreview()

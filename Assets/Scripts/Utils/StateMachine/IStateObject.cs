@@ -6,7 +6,8 @@ namespace Utils.StateMachine
     public interface IStateObject<T> where T : Enum
     {
         public Task Init();
-        public void ListenToStateChangedEvent();
+        public void SubscribeToStateChangedEvent();
+        public void UnSubscribeToStateChangedEvent();
         public int OnStateChanged(EnumStateMachine<T>.StateChangedEventPayload payload);
     }
 }

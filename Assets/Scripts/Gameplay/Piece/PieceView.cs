@@ -30,7 +30,12 @@ namespace Gameplay.Piece
             _meshRenderer = pieceMeshObject.GetComponent<MeshRenderer>();
 
             //Subscribe to state machine
-            ListenToStateChangedEvent();
+            SubscribeToStateChangedEvent();
+        }
+
+        private void OnDestroy()
+        {
+            UnSubscribeToStateChangedEvent();
         }
 
         public async Task Init()
@@ -76,7 +81,7 @@ namespace Gameplay.Piece
             }
         }
 
-        public void ListenToStateChangedEvent()
+        public void SubscribeToStateChangedEvent()
         {
             _state = GetComponent<PieceState>();
             if (!_state)
@@ -85,8 +90,13 @@ namespace Gameplay.Piece
                 return;
             }
 
-            _state.GetLogicStateMachine().ListenToStateChangedCallback(this);
-            _state.GetViewStateMachine().ListenToStateChangedCallback(this);
+            _state.GetLogicStateMachine().SubscribeToStateChangedCallback(this);
+            _state.GetViewStateMachine().SubscribeToStateChangedCallback(this);
+        }
+        public void UnSubscribeToStateChangedEvent()
+        {
+            _state.GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
+            _state.GetViewStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
         public int OnStateChanged(EnumStateMachine<EPieceLogicState>.StateChangedEventPayload payload)

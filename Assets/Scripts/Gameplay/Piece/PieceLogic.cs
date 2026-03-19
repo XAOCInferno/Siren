@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Gameplay.Tile;
 using Interaction;
@@ -20,7 +21,12 @@ namespace Gameplay.Piece
         {
             _pieceObject = GetComponent<PieceObject>();
             Assert.NotNull(_pieceObject);
-            ListenToStateChangedEvent();
+            _pieceObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
+        }
+
+        private void OnDestroy()
+        {
+            UnSubscribeToStateChangedEvent();
         }
 
         public async Task Init()
@@ -28,9 +34,13 @@ namespace Gameplay.Piece
             //..Nothing
         }
 
-        public void ListenToStateChangedEvent()
+        public void SubscribeToStateChangedEvent()
         {
-            _pieceObject.GetState().GetLogicStateMachine().ListenToStateChangedCallback(this);
+            _pieceObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
+        }
+        public void UnSubscribeToStateChangedEvent()
+        {
+            _pieceObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
         public override void SetActive()

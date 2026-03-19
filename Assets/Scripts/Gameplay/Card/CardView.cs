@@ -29,7 +29,12 @@ namespace Gameplay.Card
 
         private void Awake()
         {
-            ListenToStateChangedEvent();
+            SubscribeToStateChangedEvent();
+        }
+
+        private void OnDestroy()
+        {
+            UnSubscribeToStateChangedEvent();
         }
         
         public async Task Init()
@@ -37,7 +42,7 @@ namespace Gameplay.Card
             //..Does nothing
         }
 
-        public void ListenToStateChangedEvent()
+        public void SubscribeToStateChangedEvent()
         {
             _state = GetComponent<CardState>();
             if (!_state)
@@ -46,7 +51,11 @@ namespace Gameplay.Card
                 return;
             }
 
-            _state.GetInteractionStateMachine().ListenToStateChangedCallback(this);
+            _state.GetInteractionStateMachine().SubscribeToStateChangedCallback(this);
+        }
+        public void UnSubscribeToStateChangedEvent()
+        {
+            _state.GetInteractionStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
         public void SetViewModelData(CardViewModelData data)

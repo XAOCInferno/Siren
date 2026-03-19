@@ -32,7 +32,12 @@ namespace Gameplay.Tile
             startingPos = transform.position;
 
             //Now subscribe to our State Machine
-            ListenToStateChangedEvent();
+            SubscribeToStateChangedEvent();
+        }
+
+        private void OnDestroy()
+        {
+            UnSubscribeToStateChangedEvent();
         }
 
         public async Task Init()
@@ -49,9 +54,14 @@ namespace Gameplay.Tile
             }
         }
 
-        public void ListenToStateChangedEvent()
+        public void SubscribeToStateChangedEvent()
         {
-            tileObject.GetState().GetViewStateMachine().ListenToStateChangedCallback(this);
+            tileObject.GetState().GetViewStateMachine().SubscribeToStateChangedCallback(this);
+        }
+
+        public void UnSubscribeToStateChangedEvent()
+        {
+            tileObject.GetState().GetViewStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
         private async Task LoadAddressables()

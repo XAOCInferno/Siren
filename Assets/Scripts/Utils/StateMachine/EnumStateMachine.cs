@@ -3,8 +3,13 @@ using Debug;
 
 namespace Utils.StateMachine
 {
+    /// <summary>
+    /// Generic state machine for Enums
+    /// </summary>
+    /// <typeparam name="T">The enum this state machine handles</typeparam>
     public class EnumStateMachine<T> where T : Enum
     {
+        //Event payload for when a state changes
         public class StateChangedEventPayload : EventArgs
         {
             public readonly T oldState;
@@ -17,29 +22,47 @@ namespace Utils.StateMachine
             }
         }
 
+        //Our current state
         private T _state;
 
+        //Callback on state change
         protected Func<StateChangedEventPayload, int> onStateChangeCallback;
 
+        //Changes our state, use this instead of a direct change to _state variable
         public void SetState(T newState)
         {
+            //Check if we need to change state, if not return early
             if (_state.Equals(newState)) return;
-            //Diff state
+            
+            //Save old state and set new state
             T oldState = _state;
             _state = newState;
+            
+            //Log
             DebugSystem.Log($"State changed from {oldState} to {newState}");
-            //Callback
+            
+            //Call callback to inform other systems who are subscribed
             onStateChangeCallback?.Invoke(new StateChangedEventPayload(oldState, newState));
         }
 
-        public T GetState()
-        {
-            return _state;
-        }
+        public T GetState() => _state;
 
-        public void ListenToStateChangedCallback(IStateObject<T> stateObject)
+        /// <summary>
+        /// Subscribe an IStateObject to listen to our callback
+        /// </summary>
+        /// <param name="stateObject">The object that wants to listen where T is the enum this state machine is responsible for</param>
+        public void SubscribeToStateChangedCallback(IStateObject<T> stateObject)
         {
             onStateChangeCallback += stateObject.OnStateChanged;
+        }
+        
+        /// <summary>
+        /// Unsubscribe an IStateObject to listen to our callback
+        /// </summary>
+        /// <param name="stateObject">The object that wants to listen where T is the enum this state machine is responsible for</param>
+        public void UnsubscribeToStateChangedCallback(IStateObject<T> stateObject)
+        {
+            onStateChangeCallback -= stateObject.OnStateChanged;
         }
     }
 }
