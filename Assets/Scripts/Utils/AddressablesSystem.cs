@@ -6,11 +6,20 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace Utils
 {
+    /// <summary>
+    /// A global system to grab data from addressables. Will ensure that addressables are only fetched once.
+    /// </summary>
+    /// <typeparam name="T">The asset type that we will be grabbing from addressables eg GameObject, Material, etc.</typeparam>
     public static class AddressablesSystem<T>
     {
         private static readonly Dictionary<string, T> LoadedAssets = new();
         private static readonly Dictionary<string, AsyncOperationHandle<T>> CurrentlyLoadingHandles = new();
 
+        /// <summary>
+        /// Returns either the cached addressable result or fetches it from the addressables.
+        /// </summary>
+        /// <param name="addressableId">The name of the addressable defined on the object in Unity</param>
+        /// <returns></returns>
         public static async Task<T> GetOrLoadAddressable(string addressableId)
         {
             //If we've already loaded the addressable then return it instantly
