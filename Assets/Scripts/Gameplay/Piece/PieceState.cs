@@ -10,6 +10,7 @@ namespace Gameplay.Piece
         IdleOnBoard,
         SelectedOnBoard
     }
+
     public enum EPieceViewState
     {
         Idle,
@@ -21,20 +22,30 @@ namespace Gameplay.Piece
     public class PieceState : MonoBehaviour
     {
         private Vector2Int _gridLocation;
-        
+
         //Logic
         private readonly EnumStateMachine<EPieceLogicState> _logicStateMachine = new();
         public EnumStateMachine<EPieceLogicState> GetLogicStateMachine() => _logicStateMachine;
-        
+
         //View
         private readonly EnumStateMachine<EPieceViewState> _viewStateMachine = new();
         public EnumStateMachine<EPieceViewState> GetViewStateMachine() => _viewStateMachine;
 
         public bool interactable;
-        
+        protected Player.Player ownerPlayer;
+
         public void SetGridLocation(Vector2Int location)
         {
             _gridLocation = location;
         }
+
+        public Vector2Int GetGridLocation() => _gridLocation;
+        
+        public void SetOwnerPlayer(Player.Player player)
+        {
+            ownerPlayer = player;
+        }
+
+        public Player.Player GetOwnerPlayer() => ownerPlayer;
     }
 }

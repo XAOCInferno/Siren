@@ -393,6 +393,8 @@ namespace Gameplay
                                            (connectionMkr.transform.localPosition * -1);
 
             //Set State
+            pieceObject.GetLogic().SetCardData(payload.pieceData);
+            pieceObject.GetState().SetOwnerPlayer(payload.spawnedByPlayer);
             BoardSystem<PieceObject>.SetItemOnGrid(payload.gridCoordinates, pieceObject);
             pieceObject.GetState().SetGridLocation(payload.gridCoordinates);
             pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);

@@ -40,5 +40,10 @@ namespace Player
         {
             return Players.Find((player => player.playerData.isLocallyControlled));
         }
+        [CanBeNull]
+        public static Player GetAIPlayer()
+        {
+            return Players.Find((player => !player.playerData.isLocallyControlled));
+        }
     }
 }

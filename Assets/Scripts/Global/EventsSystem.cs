@@ -1,6 +1,7 @@
 using System;
 using Gameplay;
 using Gameplay.Card;
+using Gameplay.Piece;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -38,11 +39,14 @@ namespace Global
         {
             public readonly PieceData pieceData;
             public readonly Vector2Int gridCoordinates;
+            public readonly Player.Player spawnedByPlayer;
 
-            public OrderPlacePieceOnBoardPayload(PieceData pieceData, Vector2Int gridCoordinates)
+            public OrderPlacePieceOnBoardPayload(PieceData pieceData, Vector2Int gridCoordinates,
+                Player.Player spawnedByPlayer)
             {
                 this.pieceData = pieceData;
                 this.gridCoordinates = gridCoordinates;
+                this.spawnedByPlayer = spawnedByPlayer;
             }
         }
 

@@ -7,6 +7,7 @@ using Global;
 using Interaction;
 using JetBrains.Annotations;
 using NUnit.Framework;
+using Player;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -38,6 +39,8 @@ namespace Gameplay.Card
         private CardObject _cardObject;
 
         protected Vector2Int desiredGridLocation = Vector2Int.zero;
+
+        protected Player.Player lastPlayedBy;
 
         private void Awake()
         {
@@ -114,9 +117,12 @@ namespace Gameplay.Card
             view.SetDesiredPosition(position, view.GetMoveSpeedFromContext(context), callback);
         }
 
-        public void PlayCard(Vector2Int atGridLocation)
+        public void PlayCard(Vector2Int atGridLocation, Player.Player player)
         {
             DebugSystem.Log($"Card {gameObject.name} is about to be played to the board");
+
+            //Save who played this
+            lastPlayedBy = player;
 
             //Where we will play to
             desiredGridLocation = atGridLocation;
@@ -127,7 +133,7 @@ namespace Gameplay.Card
 
             //End interaction
             InteractionSystem.SetInteractable(this, false);
-            
+
             //Change state to being played to the board
             _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.PlayedToBoard);
 
@@ -139,8 +145,10 @@ namespace Gameplay.Card
         {
             //Play
             BoardEvents.InvokeOnOrderPlacePieceOnBoard(this,
-                new BoardEvents.OrderPlacePieceOnBoardPayload(_cardData.GetAssociatedPieceData(), desiredGridLocation));
-
+                new BoardEvents.OrderPlacePieceOnBoardPayload(_cardData.GetAssociatedPieceData(), desiredGridLocation,
+                    lastPlayedBy));
+            lastPlayedBy = null;
+            
             //Reset
             desiredGridLocation = Vector2Int.zero;
 
@@ -198,7 +206,7 @@ namespace Gameplay.Card
             //If we're the card being played, then clear
             if (CardService.localCardLogicBeingPlayed == this)
             {
-                CardService.ClearCardBeingPlayed();
+                CardService.ClearLocalCardBeingPlayed();
             }
         }
 
@@ -211,7 +219,7 @@ namespace Gameplay.Card
         {
             CardState state = _cardObject.GetState();
             state.GetInteractionStateMachine().SetState(EInteractionState.Selected);
-            CardService.SetCardBeingPlayed(this);
+            CardService.SetLocalCardBeingPlayed(this);
         }
 
         public void SetInteractable(bool interactable)
@@ -226,7 +234,7 @@ namespace Gameplay.Card
             //If we're the card being played, then clear
             if (CardService.localCardLogicBeingPlayed == this)
             {
-                CardService.ClearCardBeingPlayed();
+                CardService.ClearLocalCardBeingPlayed();
             }
         }
     }

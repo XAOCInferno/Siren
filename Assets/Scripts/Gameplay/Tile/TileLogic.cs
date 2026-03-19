@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using Gameplay.Card;
+using Interaction;
 using NUnit.Framework;
+using Player;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils.StateMachine;
@@ -26,6 +28,16 @@ namespace Gameplay.Tile
         public void ListenToStateChangedEvent()
         {
             tileObject.GetState().GetLogicStateMachine().ListenToStateChangedCallback(this);
+        }
+
+        public void OnStartAttackPreview()
+        {
+            tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.PreviewAttack);
+        }
+
+        public void OnStartMovePreview()
+        {
+            tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.PreviewMove);
         }
 
         public int OnStateChanged(EnumStateMachine<ETileLogicState>.StateChangedEventPayload payload)
@@ -63,15 +75,14 @@ namespace Gameplay.Tile
             //Ensure this is valid
             if (state.GetIsOccupiedByPiece() || CardService.localCardLogicBeingPlayed == null) return;
 
-            //Valid, get data and spawn piece
-            CardService.localCardLogicBeingPlayed.PlayCard(state.GetGridLocation());
-
-            //Clear
-            CardService.ClearCardBeingPlayed();
+            //Now play card
+            CardService.PlayCard(tileObject.GetState().GetGridLocation(), true);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
+            ETileViewState state = tileObject.GetState().GetViewStateMachine().GetState();
+            if (state is ETileViewState.PreviewAttack or ETileViewState.PreviewMove) return;
             tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
         }
     }

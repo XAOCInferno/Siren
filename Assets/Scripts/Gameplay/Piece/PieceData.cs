@@ -1,12 +1,17 @@
 using UnityEngine;
 
-namespace Gameplay
+namespace Gameplay.Piece
 {
     [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/Gameplay/Piece", order = 2)]
     public class PieceData : ScriptableObject
     {
-        public PieceData()
+        [SerializeField] private int baseMovement;
+
+        public int GetBaseMovement() => baseMovement;
+
+        public PieceData(int baseMovement)
         {
+            this.baseMovement = baseMovement;
         }
     }
 }

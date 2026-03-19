@@ -11,7 +11,7 @@ namespace Gameplay.Tile
         Idle,
         OccupiedByPiece
     }
-    
+
     public enum ETileViewState
     {
         None = 0,
@@ -27,20 +27,22 @@ namespace Gameplay.Tile
         public EnumStateMachine<ETileLogicState> GetLogicStateMachine() => _logicStateMachine;
         private readonly EnumStateMachine<ETileViewState> _viewStateMachine = new();
         public EnumStateMachine<ETileViewState> GetViewStateMachine() => _viewStateMachine;
-        
-        
-        [CanBeNull] protected PieceLogic occupiedByPieceLogic = null;
+
+
+        [CanBeNull] private PieceLogic _occupiedByPieceLogic = null;
         private Vector2Int _gridLocation;
 
         public void SetOccupier(PieceLogic pieceLogic)
         {
-            occupiedByPieceLogic = pieceLogic;
+            _occupiedByPieceLogic = pieceLogic;
             _logicStateMachine.SetState(ETileLogicState.OccupiedByPiece);
         }
 
+        public PieceLogic GetOccupier() => _occupiedByPieceLogic;
+
         public void ClearOccupier()
         {
-            occupiedByPieceLogic = null;
+            _occupiedByPieceLogic = null;
             _logicStateMachine.SetState(ETileLogicState.Idle);
         }
 

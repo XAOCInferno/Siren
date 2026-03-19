@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Gameplay.Tile;
 using Interaction;
 using NUnit.Framework;
 using UnityEngine.EventSystems;
@@ -13,7 +14,7 @@ namespace Gameplay.Piece
         IPointerClickHandler
     {
         private PieceObject _pieceObject;
-        private readonly PieceData _pieceData;
+        private PieceData _pieceData;
 
         private void Awake()
         {
@@ -57,6 +58,13 @@ namespace Gameplay.Piece
             }
 
             return 0;
+        }
+
+
+        public void SetCardData(PieceData newPieceData)
+        {
+            //Our Data
+            _pieceData = newPieceData;
         }
 
         //IPointer Events
@@ -105,6 +113,22 @@ namespace Gameplay.Piece
         {
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.SelectedOnBoard);
             _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Selected);
+            TileObject[] tiles = BoardSystem<TileObject>.GetItemsInCircle(_pieceObject.GetState().GetGridLocation(),
+                _pieceData.GetBaseMovement());
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                //Check if the tiles are occupied by an enemy, if they are, then we preview for attack, otherwise for move
+                var occupier = tiles[i].GetState().GetOccupier();
+                if (occupier && occupier._pieceObject.GetState().GetOwnerPlayer() !=
+                    _pieceObject.GetState().GetOwnerPlayer())
+                {
+                    tiles[i].GetLogic().OnStartAttackPreview();
+                }
+                else
+                {
+                    tiles[i].GetLogic().OnStartMovePreview();
+                }
+            }
         }
 
         public void SetInteractable(bool interactable)
