@@ -1,8 +1,5 @@
 using System.Threading.Tasks;
-using Gameplay.Card;
-using Interaction;
 using NUnit.Framework;
-using Player;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils.StateMachine;
@@ -86,10 +83,10 @@ namespace Gameplay.Tile
             TileState state = tileObject.GetState();
 
             //Ensure this is valid
-            if (state.GetIsOccupiedByPiece() || CardService.localCardLogicBeingPlayed == null) return;
+            if (state.GetIsOccupiedByPiece() || GameplaySystem.localCardLogicBeingPlayed == null) return;
 
             //Now play card
-            CardService.PlayCard(tileObject.GetState().GetGridLocation(), true);
+            GameplaySystem.PlayCard(tileObject.GetState().GetGridLocation(), true);
         }
 
         public void OnPointerExit(PointerEventData eventData)

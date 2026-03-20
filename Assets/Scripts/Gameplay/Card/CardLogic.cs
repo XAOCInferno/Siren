@@ -111,9 +111,9 @@ namespace Gameplay.Card
             view.SetDesiredOffset(Vector3.zero, view.GetMoveSpeedFromContext(ECardMoveContext.DeckToHand));
 
             //If we're the card being played, then clear
-            if (CardService.localCardLogicBeingPlayed == this)
+            if (GameplaySystem.localCardLogicBeingPlayed == this)
             {
-                CardService.ClearLocalCardBeingPlayed();
+                GameplaySystem.ClearLocalCardBeingPlayed();
             }
         }
 
@@ -126,7 +126,7 @@ namespace Gameplay.Card
         {
             CardState state = _cardObject.GetState();
             state.GetInteractionStateMachine().SetState(EInteractionState.Selected);
-            CardService.SetLocalCardBeingPlayed(this);
+            GameplaySystem.SetLocalCardBeingPlayed(this);
         }
 
         public void SetInteractable(bool interactable)
@@ -139,9 +139,9 @@ namespace Gameplay.Card
             }
 
             //If we're the card being played, then clear
-            if (CardService.localCardLogicBeingPlayed == this)
+            if (GameplaySystem.localCardLogicBeingPlayed == this)
             {
-                CardService.ClearLocalCardBeingPlayed();
+                GameplaySystem.ClearLocalCardBeingPlayed();
             }
         }
         //~IInteractable End
@@ -241,7 +241,7 @@ namespace Gameplay.Card
             //TODO: Can activate calculation here
             bool canActivate = true;
             canActivate &= _cardObject.GetState().GetLogicStateMachine().GetState() == ECardLogicState.InHand;
-            canActivate &= CardService.localCardLogicBeingPlayed != this;
+            canActivate &= GameplaySystem.localCardLogicBeingPlayed != this;
             if (!canActivate)
             {
                 return;
