@@ -1,8 +1,9 @@
-using System;
 using System.Threading.Tasks;
+using Debug;
 using Gameplay.Tile;
 using Interaction;
 using NUnit.Framework;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
 using Utils.StateMachine;
@@ -38,6 +39,7 @@ namespace Gameplay.Piece
         {
             _pieceObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
         }
+
         public void UnSubscribeToStateChangedEvent()
         {
             _pieceObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
@@ -121,22 +123,57 @@ namespace Gameplay.Piece
 
         public void SetSelected()
         {
+            //Get our movement settings
+            TileObject[] tilesInMovementRange;
+            Vector2Int gridLocation = _pieceObject.GetState().GetGridLocation();
+            EPieceMovementType movementType = _pieceData.GetMovementType();
+            int movementSpeed = _pieceData.GetBaseMovement();
+
+            //Select the piece
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.SelectedOnBoard);
             _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Selected);
-            TileObject[] tiles = BoardSystem<TileObject>.GetItemsInCircle(_pieceObject.GetState().GetGridLocation(),
-                _pieceData.GetBaseMovement());
-            for (int i = 0; i < tiles.Length; i++)
+
+            //If piece cannot move, we can return early now
+            if (movementType == EPieceMovementType.None || movementSpeed == 0) return;
+
+            //Preview move logic
+            //Get tiles that are in our range
+            switch (movementType)
+            {
+                case EPieceMovementType.Cross:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInCross(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.Diagonal:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInDiagonalCross(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.Star:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInStar(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.Circle:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInCircle(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.Square:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInSquare(gridLocation, movementSpeed);
+                    break;
+                default:
+                    DebugSystem.Warn(
+                        $"Unexpected movement type {movementType}, this is not supported. Piece will be treated as immovable, though code should have returned early before thie point.");
+                    return;
+            }
+
+            //Preview movement on all tiles in range, if any
+            for (int i = 0; i < tilesInMovementRange.Length; i++)
             {
                 //Check if the tiles are occupied by an enemy, if they are, then we preview for attack, otherwise for move
-                var occupier = tiles[i].GetState().GetOccupier();
+                var occupier = tilesInMovementRange[i].GetState().GetOccupier();
                 if (occupier && occupier._pieceObject.GetState().GetOwnerPlayer() !=
                     _pieceObject.GetState().GetOwnerPlayer())
                 {
-                    tiles[i].GetLogic().OnStartAttackPreview();
+                    tilesInMovementRange[i].GetLogic().OnStartAttackPreview();
                 }
                 else
                 {
-                    tiles[i].GetLogic().OnStartMovePreview();
+                    tilesInMovementRange[i].GetLogic().OnStartMovePreview();
                 }
             }
         }
