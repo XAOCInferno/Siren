@@ -60,6 +60,21 @@ namespace Gameplay
             return null;
         }
 
+        /// <summary>
+        /// Gets the item at an offset position
+        /// </summary>
+        /// <param name="origin">Where to start moving from</param>
+        /// <param name="dir">Direction to offset in, consider this a rotation</param>
+        /// <param name="distanceX">How far to offset in X direction</param>
+        /// <param name="distanceY">How far to offset in Y direction</param>
+        /// <returns>Returns T or Null.</returns>
+        public static T GetItemAtOffset(Vector2Int origin, Vector2Int dir, int distanceX, int distanceY)
+        {
+            int xOffset = distanceX * dir.x;
+            int yOffset = distanceY * dir.y;
+
+            return GetItemOnGrid(new Vector2Int(origin.x + xOffset, origin.y + yOffset));
+        }
 
         /// <summary>
         /// Gets an array containing all the items that fit within a Square area
@@ -333,37 +348,38 @@ namespace Gameplay
         }
 
         /// <summary>
-        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// Returns the item at the end of standard L shape.
         /// </summary>
-        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="origin">Coordinate of central item.</param>
         /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
         /// <param name="distance">How far from center can it move?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T GetItemAtEndOfStandingLShape(Vector2Int center, Vector2Int dir, int distance)
+        public static T GetItemAtEndOfStandingLShape(Vector2Int origin, Vector2Int dir, int distance)
         {
-            return GetItemAtEndOfLShape(center, dir, distance, false);
+            return GetItemAtEndOfLShape(origin, dir, distance, false);
         }
 
         /// <summary>
-        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// Returns the item at the end of a resting L shape. Resting means L rotated 90 degrees.
         /// </summary>
-        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="origin">Coordinate of central item.</param>
         /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
         /// <param name="distance">How far from center can it move?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T GetItemAtEndOfRestingLShape(Vector2Int center, Vector2Int dir, int distance)
+        public static T GetItemAtEndOfRestingLShape(Vector2Int origin, Vector2Int dir, int distance)
         {
-            return GetItemAtEndOfLShape(center, dir, distance, true);
+            return GetItemAtEndOfLShape(origin, dir, distance, true);
         }
 
         /// <summary>
-        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// Returns the item at the end of an L shape
         /// </summary>
-        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="origin">Coordinate of central item.</param>
         /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
         /// <param name="distance">How far from center can it move?</param>
+        /// <param name="isResting">Is the L on its side (rotated 90 degrees)</param>
         /// <returns>Returns Array of T.</returns>
-        public static T GetItemAtEndOfLShape(Vector2Int center, Vector2Int dir, int distance, bool isResting)
+        public static T GetItemAtEndOfLShape(Vector2Int origin, Vector2Int dir, int distance, bool isResting)
         {
             dir.Clamp(new Vector2Int(-1, -1), new Vector2Int(1, 1));
             Assert.NotZero(dir.x);
@@ -371,24 +387,14 @@ namespace Gameplay
 
             int x = (isResting ? 1 : 2) * distance;
             int y = (isResting ? -2 : -1) * distance;
-            return GetItemAtOffset(center, dir, x, y);
+            return GetItemAtOffset(origin, dir, x, y);
         }
 
-        public static T GetItemAtOffset(Vector2Int center, Vector2Int dir, int distanceX, int distanceY)
-        {
-            int xOffset = distanceX * dir.x;
-            int yOffset = distanceY * dir.y;
-
-            return GetItemOnGrid(new Vector2Int(center.x + xOffset, center.y + yOffset));
-        }
-
-        //TODO:
         /// <summary>
-        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// Gets an array containing all the items that fit within in LShapes in all directions
         /// </summary>
         /// <param name="center">Coordinate of central item.</param>
-        /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
-        /// <param name="distance">How far from center can it move?</param>
+        /// <param name="distance">Distance. This is inclusive, so distance > 1 will show results for 1 and the difference</param>
         /// <returns>Returns Array of T.</returns>
         public static T[] GetItemsInLShapeCross(Vector2Int center, int distance)
         {
