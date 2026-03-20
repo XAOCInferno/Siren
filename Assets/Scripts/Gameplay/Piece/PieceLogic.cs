@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Debug;
 using Gameplay.Tile;
@@ -18,6 +20,8 @@ namespace Gameplay.Piece
     {
         private PieceObject _pieceObject;
         private PieceData _pieceData;
+
+        protected List<TileObject> currentPreviewedTiles = new();
 
         private void Awake()
         {
@@ -77,13 +81,6 @@ namespace Gameplay.Piece
         }
         //~IPooledItem End
 
-
-        public void SetCardData(PieceData newPieceData)
-        {
-            //Our Data
-            _pieceData = newPieceData;
-        }
-
         //~IPointer Events
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -114,17 +111,25 @@ namespace Gameplay.Piece
         }
         //~IPointer Events End
 
-        //IInteractable, Do not call directly instead let service call this
+        //~IInteractable, Do not call directly instead let service call this
         public void SetIdle()
         {
+            //State
             _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Idle);
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
+
+            //Clear previewed if we had any
+            ClearAnyPreviewedTiles();
         }
 
         public void SetHovered()
         {
+            //State
             _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Hovered);
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
+
+            //Clear previewed if we had any
+            ClearAnyPreviewedTiles();
         }
 
         public void SetSelected()
@@ -185,6 +190,9 @@ namespace Gameplay.Piece
                     tilesInMovementRange[i].GetLogic().OnStartMovePreview();
                 }
             }
+
+            //Save a copy so we can deactivate them later
+            currentPreviewedTiles = tilesInMovementRange.ToList();
         }
 
         public void SetInteractable(bool interactable)
@@ -192,5 +200,26 @@ namespace Gameplay.Piece
             _pieceObject.GetState().interactable = interactable;
         }
         //~IInteractable End
+
+        protected void ClearAnyPreviewedTiles()
+        {
+            //Return early if we have no tiles to prevent null ref in foreach
+            if (currentPreviewedTiles.Count == 0) return;
+
+            //Iterate over all tiels and reset them to idle state
+            foreach (TileObject previewedTile in currentPreviewedTiles)
+            {
+                previewedTile.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
+            }
+
+            //Clear our list
+            currentPreviewedTiles.Clear();
+        }
+
+        public void SetCardData(PieceData newPieceData)
+        {
+            //Our Data
+            _pieceData = newPieceData;
+        }
     }
 }
