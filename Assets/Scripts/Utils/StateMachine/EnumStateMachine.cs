@@ -48,21 +48,21 @@ namespace Utils.StateMachine
         public T GetState() => _state;
 
         /// <summary>
-        /// Subscribe an IStateObject to listen to our callback
+        /// Subscribe an IStatedItem to listen to our callback
         /// </summary>
-        /// <param name="stateObject">The object that wants to listen where T is the enum this state machine is responsible for</param>
-        public void SubscribeToStateChangedCallback(IStateObject<T> stateObject)
+        /// <param name="statedItem">The object that wants to listen where T is the enum this state machine is responsible for</param>
+        public void SubscribeToStateChangedCallback(IStatedItem<T> statedItem)
         {
-            onStateChangeCallback += stateObject.OnStateChanged;
+            onStateChangeCallback += statedItem.OnStateChanged;
         }
         
         /// <summary>
-        /// Unsubscribe an IStateObject to listen to our callback
+        /// Unsubscribe an IStatedItem to listen to our callback
         /// </summary>
-        /// <param name="stateObject">The object that wants to listen where T is the enum this state machine is responsible for</param>
-        public void UnsubscribeToStateChangedCallback(IStateObject<T> stateObject)
+        /// <param name="statedItem">The object that wants to listen where T is the enum this state machine is responsible for</param>
+        public void UnsubscribeToStateChangedCallback(IStatedItem<T> statedItem)
         {
-            onStateChangeCallback -= stateObject.OnStateChanged;
+            onStateChangeCallback -= statedItem.OnStateChanged;
         }
     }
 }

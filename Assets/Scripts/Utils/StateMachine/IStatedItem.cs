@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Utils.StateMachine
 {
-    public interface IStateObject<T> where T : Enum
+    public interface IStatedItem<T> where T : Enum
     {
         public Task Init();
         public void SubscribeToStateChangedEvent();

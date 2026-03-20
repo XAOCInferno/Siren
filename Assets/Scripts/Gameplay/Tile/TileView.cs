@@ -9,7 +9,7 @@ using Utils.StateMachine;
 
 namespace Gameplay.Tile
 {
-    public class TileView : MonoBehaviour, IStateObject<ETileViewState>
+    public class TileView : MonoBehaviour, IStatedItem<ETileViewState>
     {
         [SerializeField] protected float yMoveOnHover = 0.5f;
         [SerializeField] protected float moveTime = 0.2f;
@@ -40,6 +40,7 @@ namespace Gameplay.Tile
             UnSubscribeFromStateChangedEvent();
         }
 
+        //~IStatedItem
         public async Task Init()
         {
             try
@@ -64,6 +65,32 @@ namespace Gameplay.Tile
             tileObject.GetState().GetViewStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
+        public int OnStateChanged(EnumStateMachine<ETileViewState>.StateChangedEventPayload payload)
+        {
+            switch (payload.newState)
+            {
+                case ETileViewState.Idle:
+                    MoveToIdlePosition();
+                    SetIdleMaterial();
+                    break;
+                case ETileViewState.Hovered:
+                    MoveToActivePosition();
+                    SetIdleMaterial();
+                    break;
+                case ETileViewState.PreviewAttack:
+                    MoveToActivePosition();
+                    SetPreviewAttackMaterial();
+                    break;
+                case ETileViewState.PreviewMove:
+                    MoveToActivePosition();
+                    SetPreviewMoveMaterial();
+                    break;
+            }
+
+            return 0;
+        }
+
+        //~IStatedItem End
         private async Task LoadAddressables()
         {
             try
@@ -95,30 +122,6 @@ namespace Gameplay.Tile
             }
         }
 
-        public int OnStateChanged(EnumStateMachine<ETileViewState>.StateChangedEventPayload payload)
-        {
-            switch (payload.newState)
-            {
-                case ETileViewState.Idle:
-                    MoveToIdlePosition();
-                    SetIdleMaterial();
-                    break;
-                case ETileViewState.Hovered:
-                    MoveToActivePosition();
-                    SetIdleMaterial();
-                    break;
-                case ETileViewState.PreviewAttack:
-                    MoveToActivePosition();
-                    SetPreviewAttackMaterial();
-                    break;
-                case ETileViewState.PreviewMove:
-                    MoveToActivePosition();
-                    SetPreviewMoveMaterial();
-                    break;
-            }
-
-            return 0;
-        }
 
         protected void MoveToActivePosition()
         {

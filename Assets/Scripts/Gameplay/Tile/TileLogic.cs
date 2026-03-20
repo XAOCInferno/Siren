@@ -9,7 +9,7 @@ using Utils.StateMachine;
 
 namespace Gameplay.Tile
 {
-    public class TileLogic : MonoBehaviour, IStateObject<ETileLogicState>
+    public class TileLogic : MonoBehaviour, IStatedItem<ETileLogicState>
     {
         protected TileObject tileObject;
 
@@ -25,6 +25,7 @@ namespace Gameplay.Tile
             UnSubscribeFromStateChangedEvent();
         }
 
+        //~IStatedItem
         public async Task Init()
         {
             //..Nothing
@@ -40,16 +41,6 @@ namespace Gameplay.Tile
             tileObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
-        public void OnStartAttackPreview()
-        {
-            tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.PreviewAttack);
-        }
-
-        public void OnStartMovePreview()
-        {
-            tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.PreviewMove);
-        }
-
         public int OnStateChanged(EnumStateMachine<ETileLogicState>.StateChangedEventPayload payload)
         {
             switch (payload.newState)
@@ -61,6 +52,18 @@ namespace Gameplay.Tile
 
             return 0;
         }
+        //~IStatedItem End
+
+        public void OnStartAttackPreview()
+        {
+            tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.PreviewAttack);
+        }
+
+        public void OnStartMovePreview()
+        {
+            tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.PreviewMove);
+        }
+
 
         //Not called directly on this object, requires 1 or more TileInputTrigger that will inform this
         public void OnPointerEnter(PointerEventData eventData)

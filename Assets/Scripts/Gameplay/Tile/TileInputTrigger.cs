@@ -8,7 +8,7 @@ namespace Gameplay.Tile
     {
         [SerializeField] private TileObject tileObject;
 
-        //IPointer Events
+        //~IPointer Events
         public void OnPointerEnter(PointerEventData eventData)
         {
             Assert.IsNotNull(tileObject);
@@ -26,5 +26,6 @@ namespace Gameplay.Tile
             Assert.IsNotNull(tileObject);
             tileObject.GetLogic().OnPointerExit(eventData);
         }
+        //~IPointer Events End
     }
 }

@@ -3,18 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Debug;
 using JetBrains.Annotations;
-using Unity.VisualScripting;
 using UnityEngine;
-using Object = System.Object;
 
 namespace Utils
 {
-    public interface IPooledItem
-    {
-        public void SetActive();
-        public void SetInActive();
-    }
-
     public class Pool<T> where T : MonoBehaviour, IPooledItem
     {
         //Inactive objects

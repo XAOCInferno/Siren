@@ -11,7 +11,8 @@ using Utils.StateMachine;
 namespace Gameplay.Piece
 {
     //TODO: Grid location inheritable? Maybe an interface for something that can be placed on the board
-    public class PieceLogic : MonoBehaviour, IPooledItem, IStateObject<EPieceLogicState>, IInteractable, IPointerEnterHandler,
+    public class PieceLogic : MonoBehaviour, IPooledItem, IStatedItem<EPieceLogicState>, IInteractable,
+        IPointerEnterHandler,
         IPointerExitHandler,
         IPointerClickHandler
     {
@@ -30,6 +31,7 @@ namespace Gameplay.Piece
             UnSubscribeFromStateChangedEvent();
         }
 
+        //~IStatedItem
         public async Task Init()
         {
             //..Nothing
@@ -43,18 +45,6 @@ namespace Gameplay.Piece
         public void UnSubscribeFromStateChangedEvent()
         {
             _pieceObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
-        }
-
-        public void SetActive()
-        {
-            InteractionSystem.SetInteractable(this, true);
-            InteractionSystem.SetIdle(this);
-        }
-
-        public void SetInActive()
-        {
-            InteractionSystem.SetInteractable(this, false);
-            InteractionSystem.SetIdle(this);
         }
 
         public int OnStateChanged(EnumStateMachine<EPieceLogicState>.StateChangedEventPayload payload)
@@ -71,6 +61,21 @@ namespace Gameplay.Piece
 
             return 0;
         }
+        //~IStatedItem End
+
+        //~IPooledItem
+        public void SetActive()
+        {
+            InteractionSystem.SetInteractable(this, true);
+            InteractionSystem.SetIdle(this);
+        }
+
+        public void SetInActive()
+        {
+            InteractionSystem.SetInteractable(this, false);
+            InteractionSystem.SetIdle(this);
+        }
+        //~IPooledItem End
 
 
         public void SetCardData(PieceData newPieceData)
@@ -79,7 +84,7 @@ namespace Gameplay.Piece
             _pieceData = newPieceData;
         }
 
-        //IPointer Events
+        //~IPointer Events
         public void OnPointerEnter(PointerEventData eventData)
         {
             //TODO: If can select...
@@ -107,6 +112,7 @@ namespace Gameplay.Piece
                 InteractionSystem.SetIdle(this);
             }
         }
+        //~IPointer Events End
 
         //IInteractable, Do not call directly instead let service call this
         public void SetIdle()
@@ -185,5 +191,6 @@ namespace Gameplay.Piece
         {
             _pieceObject.GetState().interactable = interactable;
         }
+        //~IInteractable End
     }
 }

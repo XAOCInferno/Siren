@@ -10,7 +10,7 @@ using Utils.StateMachine;
 
 namespace Gameplay.Card
 {
-    public class CardView : MoveableObject, IStateObject<EInteractionState>
+    public class CardView : MoveableObject, IStatedItem<EInteractionState>
     {
         [SerializeField] protected CardViewModel cardViewModel;
 
@@ -36,7 +36,8 @@ namespace Gameplay.Card
         {
             UnSubscribeFromStateChangedEvent();
         }
-        
+
+        //~IStatedItem
         public async Task Init()
         {
             //..Does nothing
@@ -53,10 +54,30 @@ namespace Gameplay.Card
 
             _state.GetInteractionStateMachine().SubscribeToStateChangedCallback(this);
         }
+
         public void UnSubscribeFromStateChangedEvent()
         {
             _state.GetInteractionStateMachine().UnsubscribeToStateChangedCallback(this);
         }
+
+        public int OnStateChanged(EnumStateMachine<EInteractionState>.StateChangedEventPayload payload)
+        {
+            switch (payload.newState)
+            {
+                case EInteractionState.Idle:
+                case EInteractionState.Hovered:
+                    //Apply hovered offset
+                    SetDesiredOffset(Vector3.up * yMoveOnHover, moveTimeDeckToHand);
+                    cardViewModel.SetBorderVisibility(false);
+                    break;
+                case EInteractionState.Selected:
+                    cardViewModel.SetBorderVisibility(true);
+                    break;
+            }
+
+            return 0;
+        }
+        //~IStatedItem End
 
         public void SetViewModelData(CardViewModelData data)
         {
@@ -82,23 +103,6 @@ namespace Gameplay.Card
             MoveToLocation(desiredPosition + desiredOffset, moveTime);
         }
 
-        public int OnStateChanged(EnumStateMachine<EInteractionState>.StateChangedEventPayload payload)
-        {
-            switch (payload.newState)
-            {
-                case EInteractionState.Idle:
-                case EInteractionState.Hovered:
-                    //Apply hovered offset
-                    SetDesiredOffset(Vector3.up * yMoveOnHover, moveTimeDeckToHand);
-                    cardViewModel.SetBorderVisibility(false);
-                    break;
-                case EInteractionState.Selected:
-                    cardViewModel.SetBorderVisibility(true);
-                    break;
-            }
-
-            return 0;
-        }
 
         public float GetMoveSpeedFromContext(ECardMoveContext context)
         {

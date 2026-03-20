@@ -7,7 +7,6 @@ using Global;
 using Interaction;
 using JetBrains.Annotations;
 using NUnit.Framework;
-using Player;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -30,7 +29,7 @@ namespace Gameplay.Card
         HandToHand
     }
 
-    public class CardLogic : MonoBehaviour, IPooledItem, IStateObject<ECardLogicState>,
+    public class CardLogic : MonoBehaviour, IPooledItem, IStatedItem<ECardLogicState>,
         IInteractable, IPointerEnterHandler,
         IPointerExitHandler,
         IPointerClickHandler
@@ -54,6 +53,7 @@ namespace Gameplay.Card
             UnSubscribeFromStateChangedEvent();
         }
 
+        //~IStatedItem
         public async Task Init()
         {
             //..Does nothing
@@ -63,30 +63,10 @@ namespace Gameplay.Card
         {
             _cardObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
         }
+
         public void UnSubscribeFromStateChangedEvent()
         {
             _cardObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
-        }
-
-        public void SetCardData(CardData newCardData)
-        {
-            //Our Data
-            _cardData = newCardData;
-            //Set on VM
-            _cardObject.GetView().SetViewModelData(newCardData.GetViewData());
-        }
-
-        public CardData GetCardData() => _cardData;
-
-
-        public void SetActive()
-        {
-            //..Does nothing
-        }
-
-        public void SetInActive()
-        {
-            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.NotInPlay);
         }
 
         public int OnStateChanged(EnumStateMachine<ECardLogicState>.StateChangedEventPayload payload)
@@ -106,6 +86,76 @@ namespace Gameplay.Card
 
             return 0;
         }
+        //~IStatedItem End
+
+        //~IPooledItem
+        public void SetActive()
+        {
+            //..Does nothing
+        }
+
+        public void SetInActive()
+        {
+            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.NotInPlay);
+        }
+        //~IPooledItem End
+
+        //~IInteractable, Do not call directly instead let service call this
+        public void SetIdle()
+        {
+            CardView view = _cardObject.GetView();
+            //Set idle state
+            _cardObject.GetState().GetInteractionStateMachine().SetState(EInteractionState.Idle);
+            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.InHand);
+            //Apply idle offset
+            view.SetDesiredOffset(Vector3.zero, view.GetMoveSpeedFromContext(ECardMoveContext.DeckToHand));
+
+            //If we're the card being played, then clear
+            if (CardService.localCardLogicBeingPlayed == this)
+            {
+                CardService.ClearLocalCardBeingPlayed();
+            }
+        }
+
+        public void SetHovered()
+        {
+            _cardObject.GetState().GetInteractionStateMachine().SetState(EInteractionState.Hovered);
+        }
+
+        public void SetSelected()
+        {
+            CardState state = _cardObject.GetState();
+            state.GetInteractionStateMachine().SetState(EInteractionState.Selected);
+            CardService.SetLocalCardBeingPlayed(this);
+        }
+
+        public void SetInteractable(bool interactable)
+        {
+            CardState state = _cardObject.GetState();
+            EnumStateMachine<EInteractionState> stateMachine = state.GetInteractionStateMachine();
+            if (!interactable || stateMachine.GetState() == EInteractionState.UnInteractable)
+            {
+                state.GetInteractionStateMachine().SetState(EInteractionState.Idle);
+            }
+
+            //If we're the card being played, then clear
+            if (CardService.localCardLogicBeingPlayed == this)
+            {
+                CardService.ClearLocalCardBeingPlayed();
+            }
+        }
+        //~IInteractable End
+
+        public void SetCardData(CardData newCardData)
+        {
+            //Our Data
+            _cardData = newCardData;
+            //Set on VM
+            _cardObject.GetView().SetViewModelData(newCardData.GetViewData());
+        }
+
+        public CardData GetCardData() => _cardData;
+
 
         public void MoveToPosition(Vector3 position)
         {
@@ -157,7 +207,7 @@ namespace Gameplay.Card
                 new BoardEvents.OrderPlacePieceOnBoardPayload(_cardData.GetAssociatedPieceData(), desiredGridLocation,
                     lastPlayedBy));
             lastPlayedBy = null;
-            
+
             //Reset
             desiredGridLocation = Vector2Int.zero;
 
@@ -200,51 +250,6 @@ namespace Gameplay.Card
             DebugSystem.Log($"Card {gameObject.name} is being played from hand");
             _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.SelectedInHand);
             InteractionSystem.SetSelected(this);
-        }
-
-        //IInteractable, Do not call directly instead let service call this
-        public void SetIdle()
-        {
-            CardView view = _cardObject.GetView();
-            //Set idle state
-            _cardObject.GetState().GetInteractionStateMachine().SetState(EInteractionState.Idle);
-            _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.InHand);
-            //Apply idle offset
-            view.SetDesiredOffset(Vector3.zero, view.GetMoveSpeedFromContext(ECardMoveContext.DeckToHand));
-
-            //If we're the card being played, then clear
-            if (CardService.localCardLogicBeingPlayed == this)
-            {
-                CardService.ClearLocalCardBeingPlayed();
-            }
-        }
-
-        public void SetHovered()
-        {
-            _cardObject.GetState().GetInteractionStateMachine().SetState(EInteractionState.Hovered);
-        }
-
-        public void SetSelected()
-        {
-            CardState state = _cardObject.GetState();
-            state.GetInteractionStateMachine().SetState(EInteractionState.Selected);
-            CardService.SetLocalCardBeingPlayed(this);
-        }
-
-        public void SetInteractable(bool interactable)
-        {
-            CardState state = _cardObject.GetState();
-            EnumStateMachine<EInteractionState> stateMachine = state.GetInteractionStateMachine();
-            if (!interactable || stateMachine.GetState() == EInteractionState.UnInteractable)
-            {
-                state.GetInteractionStateMachine().SetState(EInteractionState.Idle);
-            }
-
-            //If we're the card being played, then clear
-            if (CardService.localCardLogicBeingPlayed == this)
-            {
-                CardService.ClearLocalCardBeingPlayed();
-            }
         }
     }
 }

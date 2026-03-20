@@ -9,7 +9,7 @@ using Utils.StateMachine;
 
 namespace Gameplay.Piece
 {
-    public class PieceView : MonoBehaviour, IStateObject<EPieceLogicState>, IStateObject<EPieceViewState>
+    public class PieceView : MonoBehaviour, IStatedItem<EPieceLogicState>, IStatedItem<EPieceViewState>
     {
         [SerializeField] private Mesh pieceMesh;
         [SerializeField] private GameObject pieceMeshObject;
@@ -38,6 +38,7 @@ namespace Gameplay.Piece
             UnSubscribeFromStateChangedEvent();
         }
 
+        //~IStatedItem
         public async Task Init()
         {
             try
@@ -48,35 +49,6 @@ namespace Gameplay.Piece
             catch (Exception e)
             {
                 DebugSystem.Error($"Failed to Init due to {e.Message}");
-                throw;
-            }
-        }
-
-        private async Task LoadAddressables()
-        {
-            try
-            {
-                //Load addressables
-                var loadIdleMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceIdle.mat");
-                var loadHoverMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceHover.mat");
-                var loadSelectedMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceSelected.mat");
-
-                //Results
-                await loadIdleMaterialTask;
-                Assert.NotNull(loadIdleMaterialTask.Result);
-                await loadHoverMaterialTask;
-                Assert.NotNull(loadHoverMaterialTask.Result);
-                await loadSelectedMaterialTask;
-                Assert.NotNull(loadSelectedMaterialTask.Result);
-
-                //Set in data
-                _materialMap.Add(EPieceViewState.Idle, loadIdleMaterialTask.Result);
-                _materialMap.Add(EPieceViewState.Hovered, loadHoverMaterialTask.Result);
-                _materialMap.Add(EPieceViewState.Selected, loadSelectedMaterialTask.Result);
-            }
-            catch (Exception e)
-            {
-                DebugSystem.Error($"Failed to load addressables due to {e.Message}");
                 throw;
             }
         }
@@ -93,6 +65,7 @@ namespace Gameplay.Piece
             _state.GetLogicStateMachine().SubscribeToStateChangedCallback(this);
             _state.GetViewStateMachine().SubscribeToStateChangedCallback(this);
         }
+
         public void UnSubscribeFromStateChangedEvent()
         {
             _state.GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
@@ -131,6 +104,37 @@ namespace Gameplay.Piece
 
             return 0;
         }
+        //~IStatedItem End
+
+        private async Task LoadAddressables()
+        {
+            try
+            {
+                //Load addressables
+                var loadIdleMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceIdle.mat");
+                var loadHoverMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceHover.mat");
+                var loadSelectedMaterialTask = AddressablesSystem<Material>.GetOrLoadAddressable("M_PieceSelected.mat");
+
+                //Results
+                await loadIdleMaterialTask;
+                Assert.NotNull(loadIdleMaterialTask.Result);
+                await loadHoverMaterialTask;
+                Assert.NotNull(loadHoverMaterialTask.Result);
+                await loadSelectedMaterialTask;
+                Assert.NotNull(loadSelectedMaterialTask.Result);
+
+                //Set in data
+                _materialMap.Add(EPieceViewState.Idle, loadIdleMaterialTask.Result);
+                _materialMap.Add(EPieceViewState.Hovered, loadHoverMaterialTask.Result);
+                _materialMap.Add(EPieceViewState.Selected, loadSelectedMaterialTask.Result);
+            }
+            catch (Exception e)
+            {
+                DebugSystem.Error($"Failed to load addressables due to {e.Message}");
+                throw;
+            }
+        }
+
 
         protected void SetMesh(Mesh newMesh)
         {
