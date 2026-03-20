@@ -7,6 +7,7 @@ using Global;
 using JetBrains.Annotations;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Utils;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
@@ -216,6 +217,7 @@ namespace Gameplay
 
             //Ensure direction is clamped correctly
             dir.Clamp(new Vector2Int(-1, -1), new Vector2Int(1, 1));
+            Assert.AreNotEqual(Vector2.zero, dir);
 
             //Calculate all items in circle
             for (int i = ignoreOrigin ? 1 : 0; i < distance; i++)
@@ -328,6 +330,87 @@ namespace Gameplay
             returnList.AddRange(GetItemsInCross(center, distance));
             returnList.AddRange(GetItemsInDiagonalCross(center, distance));
             return returnList.ToArray();
+        }
+
+        /// <summary>
+        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// </summary>
+        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
+        /// <param name="distance">How far from center can it move?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T GetItemAtEndOfStandingLShape(Vector2Int center, Vector2Int dir, int distance)
+        {
+            return GetItemAtEndOfLShape(center, dir, distance, false);
+        }
+
+        /// <summary>
+        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// </summary>
+        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
+        /// <param name="distance">How far from center can it move?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T GetItemAtEndOfRestingLShape(Vector2Int center, Vector2Int dir, int distance)
+        {
+            return GetItemAtEndOfLShape(center, dir, distance, true);
+        }
+
+        /// <summary>
+        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// </summary>
+        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
+        /// <param name="distance">How far from center can it move?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T GetItemAtEndOfLShape(Vector2Int center, Vector2Int dir, int distance, bool isResting)
+        {
+            dir.Clamp(new Vector2Int(-1, -1), new Vector2Int(1, 1));
+            Assert.NotZero(dir.x);
+            Assert.NotZero(dir.y);
+
+            int x = (isResting ? 1 : 2) * distance;
+            int y = (isResting ? -2 : -1) * distance;
+            return GetItemAtOffset(center, dir, x, y);
+        }
+
+        public static T GetItemAtOffset(Vector2Int center, Vector2Int dir, int distanceX, int distanceY)
+        {
+            int xOffset = distanceX * dir.x;
+            int yOffset = distanceY * dir.y;
+
+            return GetItemOnGrid(new Vector2Int(center.x + xOffset, center.y + yOffset));
+        }
+
+        //TODO:
+        /// <summary>
+        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// </summary>
+        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
+        /// <param name="distance">How far from center can it move?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T[] GetItemsInLShapeCross(Vector2Int center, int distance)
+        {
+            List<T> listOfItems = new();
+            Vector2Int topRight = new Vector2Int(1, 1);
+            Vector2Int topLeft = new Vector2Int(-1, 1);
+            Vector2Int bottomRight = new Vector2Int(1, -1);
+            Vector2Int bottomLeft = new Vector2Int(-1, -1);
+            for (int i = 0; i < distance; i++)
+            {
+                int dist = i + 1;
+                listOfItems.Add(GetItemAtEndOfStandingLShape(center, topRight, dist));
+                listOfItems.Add(GetItemAtEndOfStandingLShape(center, topLeft, dist));
+                listOfItems.Add(GetItemAtEndOfStandingLShape(center, bottomRight, dist));
+                listOfItems.Add(GetItemAtEndOfStandingLShape(center, bottomLeft, dist));
+                listOfItems.Add(GetItemAtEndOfRestingLShape(center, topRight, dist));
+                listOfItems.Add(GetItemAtEndOfRestingLShape(center, topLeft, dist));
+                listOfItems.Add(GetItemAtEndOfRestingLShape(center, bottomRight, dist));
+                listOfItems.Add(GetItemAtEndOfRestingLShape(center, bottomLeft, dist));
+            }
+
+            return listOfItems.ToArray();
         }
 
         /// <summary>

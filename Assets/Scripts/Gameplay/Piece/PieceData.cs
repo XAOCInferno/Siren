@@ -9,7 +9,9 @@ namespace Gameplay.Piece
         Diagonal,
         Star,
         Circle,
-        Square
+        Square,
+        LShaped,
+        
     }
 
     [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/Gameplay/Piece", order = 2)]

@@ -155,6 +155,9 @@ namespace Gameplay.Piece
                 case EPieceMovementType.Square:
                     tilesInMovementRange = BoardSystem<TileObject>.GetItemsInSquare(gridLocation, movementSpeed);
                     break;
+                case EPieceMovementType.LShaped:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInLShapeCross(gridLocation, movementSpeed);
+                    break;
                 default:
                     DebugSystem.Warn(
                         $"Unexpected movement type {movementType}, this is not supported. Piece will be treated as immovable, though code should have returned early before thie point.");
