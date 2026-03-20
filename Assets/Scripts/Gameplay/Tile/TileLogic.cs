@@ -80,12 +80,6 @@ namespace Gameplay.Tile
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            //State
-            TileState state = tileObject.GetState();
-
-            //Ensure this is valid
-            if (state.GetIsOccupiedByPiece() || !GameplaySystem.GetCardBeingPlayed()) return;
-
             //Now play card
             PlayCardToTile(true);
         }
@@ -97,9 +91,14 @@ namespace Gameplay.Tile
             tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
         }
 
-        protected void PlayCardToTile(bool playedByLocalPlayer)
+        protected ActionResult PlayCardToTile(bool playedByLocalPlayer)
         {
-            GameplaySystem.PlayCard(tileObject.GetState().GetGridLocation(),
+            //Ensure this is a valid play
+            if (tileObject.GetState().GetIsOccupiedByPiece())
+                return new ActionResult(false, "Cannot play card to tile as destination tile is occupied");
+
+
+            return GameplaySystem.PlayCard(tileObject.GetState().GetGridLocation(),
                 playedByLocalPlayer ? PlayerSystem.GetLocalPlayer() : PlayerSystem.GetAIPlayer());
         }
     }
