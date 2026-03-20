@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Player;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils.StateMachine;
@@ -83,10 +84,10 @@ namespace Gameplay.Tile
             TileState state = tileObject.GetState();
 
             //Ensure this is valid
-            if (state.GetIsOccupiedByPiece() || GameplaySystem.localCardLogicBeingPlayed == null) return;
+            if (state.GetIsOccupiedByPiece() || !GameplaySystem.GetCardBeingPlayed()) return;
 
             //Now play card
-            GameplaySystem.PlayCard(tileObject.GetState().GetGridLocation(), true);
+            PlayCardToTile(true);
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -94,6 +95,12 @@ namespace Gameplay.Tile
             ETileViewState state = tileObject.GetState().GetViewStateMachine().GetState();
             if (state is ETileViewState.PreviewAttack or ETileViewState.PreviewMove) return;
             tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
+        }
+
+        protected void PlayCardToTile(bool playedByLocalPlayer)
+        {
+            GameplaySystem.PlayCard(tileObject.GetState().GetGridLocation(),
+                playedByLocalPlayer ? PlayerSystem.GetLocalPlayer() : PlayerSystem.GetAIPlayer());
         }
     }
 }

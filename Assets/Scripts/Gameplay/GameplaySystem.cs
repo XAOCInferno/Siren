@@ -1,50 +1,37 @@
 using Gameplay.Card;
-using Player;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Gameplay
 {
     public static class GameplaySystem
     {
-        public static CardLogic AICardLogicBeingPlayed { get; private set; }
-        public static CardLogic localCardLogicBeingPlayed { get; private set; }
+        [CanBeNull] private static CardObject _cardBeingPlayed;
 
-        public static void SetLocalCardBeingPlayed(CardLogic cardLogic)
+        public static CardObject GetCardBeingPlayed() => _cardBeingPlayed;
+
+        public static void SetLocalCardBeingPlayed(CardObject cardObject)
         {
-            localCardLogicBeingPlayed = cardLogic;
+            _cardBeingPlayed = cardObject;
         }
 
-        public static void ClearLocalCardBeingPlayed()
+        public static void ClearCardBeingPlayed()
         {
-            localCardLogicBeingPlayed = null;
+            _cardBeingPlayed = null;
         }
 
-        public static void SetAICardBeingPlayed(CardLogic cardLogic)
+        public static void SetCardBeingPlayed(CardObject cardObject)
         {
-            AICardLogicBeingPlayed = cardLogic;
+            _cardBeingPlayed = cardObject;
         }
 
-        public static void ClearAICardBeingPlayed()
+        public static void PlayCard(Vector2Int gridLocation, Player.Player playedBy)
         {
-            AICardLogicBeingPlayed = null;
-        }
-
-        public static void PlayCard(Vector2Int gridLocation, bool playedByLocalPlayer)
-        {
-            if (playedByLocalPlayer)
-            {
-                //Play
-                localCardLogicBeingPlayed.PlayCard(gridLocation, PlayerSystem.GetLocalPlayer());
-                //Clear
-                ClearLocalCardBeingPlayed();
-            }
-            else
-            {
-                //Play
-                AICardLogicBeingPlayed.PlayCard(gridLocation, PlayerSystem.GetAIPlayer());
-                //Clear
-                ClearAICardBeingPlayed();
-            }
+            if (!_cardBeingPlayed) return;
+            //Play
+            _cardBeingPlayed.GetLogic().PlayCard(gridLocation, playedBy);
+            //Clear
+            ClearCardBeingPlayed();
         }
     }
 }
