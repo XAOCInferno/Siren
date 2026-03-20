@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35083fe60b70f5e4ab052f784ea15f44, type: 3}
   m_Name: TestPieceTroop
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.PieceData
-  baseMovement: 3
+  baseMovement: 2
+  movementType: 3
