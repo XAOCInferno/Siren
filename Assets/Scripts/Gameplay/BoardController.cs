@@ -548,8 +548,8 @@ namespace Gameplay
             }
 
             //Try get pooled object
-            PooledObject piecePooledObject = PoolSystem<PieceLogic>.GetPool().GetNextAvailable();
-            if (!piecePooledObject)
+            PieceLogic piecePooledItem = PoolSystem<PieceLogic>.GetPool().GetNextAvailable();
+            if (!piecePooledItem)
             {
                 DebugSystem.Error(
                     $"Cannot place piece on location {payload.gridCoordinates.ToString()} due to no pooled pieces being ready");
@@ -557,7 +557,7 @@ namespace Gameplay
             }
 
             //Get piece  mkr
-            PieceObject pieceObject = piecePooledObject.GetComponent<PieceObject>();
+            PieceObject pieceObject = piecePooledItem.GetComponent<PieceObject>();
             Transform connectionMkr = pieceObject.GetTileConnectionMkr();
             //Check connection pieces are valid
             if (!tile.GetPieceConnectionMkr() || !connectionMkr)
@@ -569,11 +569,8 @@ namespace Gameplay
 
             //Now everything has been validated, add it
 
-            //Logic
-            PieceLogic pieceLogic = piecePooledObject.GetComponent<PieceLogic>();
-
             //Set scale
-            Transform pieceTransform = pieceLogic.GetComponent<Transform>();
+            Transform pieceTransform = piecePooledItem.GetComponent<Transform>();
             pieceTransform.localScale = new Vector3(boardScale, boardScale, boardScale);
 
             //Parent & offset
@@ -587,7 +584,7 @@ namespace Gameplay
             }
 
             //Set occupied
-            tileParent.GetState().SetOccupier(pieceLogic);
+            tileParent.GetState().SetOccupier(piecePooledItem);
 
             pieceTransform.parent = tileParent.GetComponent<Transform>();
             pieceTransform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +

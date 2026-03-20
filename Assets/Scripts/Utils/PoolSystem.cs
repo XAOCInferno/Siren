@@ -9,25 +9,13 @@ using Object = System.Object;
 
 namespace Utils
 {
-    public abstract class PooledObject : MonoBehaviour
+    public interface IPooledItem
     {
-        private Type _poolType;
-
-        public abstract void SetActive();
-        public abstract void SetInActive();
-
-        public Type GetPoolType()
-        {
-            return _poolType;
-        }
-
-        public void SetPoolType(Type type)
-        {
-            _poolType = type;
-        }
+        public void SetActive();
+        public void SetInActive();
     }
 
-    public class Pool<T> where T : PooledObject
+    public class Pool<T> where T : MonoBehaviour, IPooledItem
     {
         //Inactive objects
         private readonly List<T> _available = new();
@@ -46,7 +34,7 @@ namespace Utils
 
         //[available->active] Get the next available object in the pool
         [CanBeNull]
-        public PooledObject GetNextAvailable()
+        public T GetNextAvailable()
         {
             //Check we have anything to get
             if (_available.Count == 0)
@@ -72,7 +60,7 @@ namespace Utils
             if (idx == 0)
             {
                 DebugSystem.Warn(
-                    $"Cannot return object {objToReturn.GetPoolType()} to pool {_poolType} as object is not active");
+                    $"Cannot return object {objToReturn.name} to pool {_poolType} as object is not active");
                 return;
             }
 
@@ -92,7 +80,7 @@ namespace Utils
             if (idxActive > 0 || idxAvailable > 0)
             {
                 DebugSystem.Warn(
-                    $"Trying to add object {objToAdd.GetPoolType()} to pool {_poolType}, but object is already in the pool!");
+                    $"Trying to add object {objToAdd.name} to pool {_poolType}, but object is already in the pool!");
                 return;
             }
 
@@ -125,7 +113,7 @@ namespace Utils
         }
     }
 
-    public static class PoolSystem<T> where T : PooledObject
+    public static class PoolSystem<T> where T : MonoBehaviour, IPooledItem
     {
         private static readonly Pool<T> Pool = new();
         private static GameObject _templateToInstantiate;

@@ -11,7 +11,7 @@ using Utils.StateMachine;
 namespace Gameplay.Piece
 {
     //TODO: Grid location inheritable? Maybe an interface for something that can be placed on the board
-    public class PieceLogic : PooledObject, IStateObject<EPieceLogicState>, IInteractable, IPointerEnterHandler,
+    public class PieceLogic : MonoBehaviour, IPooledItem, IStateObject<EPieceLogicState>, IInteractable, IPointerEnterHandler,
         IPointerExitHandler,
         IPointerClickHandler
     {
@@ -45,13 +45,13 @@ namespace Gameplay.Piece
             _pieceObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
-        public override void SetActive()
+        public void SetActive()
         {
             InteractionSystem.SetInteractable(this, true);
             InteractionSystem.SetIdle(this);
         }
 
-        public override void SetInActive()
+        public void SetInActive()
         {
             InteractionSystem.SetInteractable(this, false);
             InteractionSystem.SetIdle(this);

@@ -30,7 +30,7 @@ namespace Gameplay.Card
         HandToHand
     }
 
-    public class CardLogic : PooledObject, IStateObject<ECardLogicState>,
+    public class CardLogic : MonoBehaviour, IPooledItem, IStateObject<ECardLogicState>,
         IInteractable, IPointerEnterHandler,
         IPointerExitHandler,
         IPointerClickHandler
@@ -79,12 +79,12 @@ namespace Gameplay.Card
         public CardData GetCardData() => _cardData;
 
 
-        public override void SetActive()
+        public void SetActive()
         {
             //..Does nothing
         }
 
-        public override void SetInActive()
+        public void SetInActive()
         {
             _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.NotInPlay);
         }

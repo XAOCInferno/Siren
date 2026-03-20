@@ -115,19 +115,18 @@ namespace Gameplay
             for (int i = 0; i < numberOfCardsInDeck; i++)
             {
                 //Get next card from pool
-                PooledObject nextPooledObject = PoolSystem<CardLogic>.GetPool().GetNextAvailable();
-                if (nextPooledObject == null)
+                CardLogic nextPooledItem = PoolSystem<CardLogic>.GetPool().GetNextAvailable();
+                if (!nextPooledItem)
                 {
                     DebugSystem.Error("Cannot get next card from pool, consider resizing the pool!");
                     return;
                 }
 
                 //Get data
-                CardLogic nextCardLogic = nextPooledObject.GetComponent<CardLogic>();
-                nextCardLogic.SetCardData(cardDatas[Random.Range(0, cardDatas.Length)]);
-                nextCardLogic.GetComponent<CardState>().GetLogicStateMachine().SetState(ECardLogicState.NotInPlay);
+                nextPooledItem.SetCardData(cardDatas[Random.Range(0, cardDatas.Length)]);
+                nextPooledItem.GetComponent<CardState>().GetLogicStateMachine().SetState(ECardLogicState.NotInPlay);
                 //Add to deck
-                AddCardToDeck(nextCardLogic, EAddToDeckOption.AddToRandomPosition);
+                AddCardToDeck(nextPooledItem, EAddToDeckOption.AddToRandomPosition);
             }
         }
 
