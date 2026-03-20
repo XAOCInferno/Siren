@@ -1,17 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
 using Debug;
 using Gameplay.Piece;
 using Gameplay.Tile;
 using Global;
 using JetBrains.Annotations;
 using NUnit.Framework;
-using Unity.VisualScripting;
-using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 using Utils;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
@@ -68,30 +63,22 @@ namespace Gameplay
         /// <summary>
         /// Gets an array containing all the items that fit within a Square area
         /// </summary>
-        /// <param name="center">Coordinate of central item, middle of the square. For even numbers (eg 4 cell square) this will be weighted to the central bottom left.</param>
-        /// <param name="size">How large the square area is. Indicates number of items in both x and y directions (eg: value of 2 is a 2x2 square). Value of 1 returns only central item.</param>
+        /// <param name="center">Coordinate of central item, middle of the square.</param>
+        /// <param name="size">How large the square area is. Indicates size from center in all directions eg 1 = 3x3, 2 = 5x5.</param>
         /// <returns>Returns Array of T.</returns>
         public static T[] GetItemsInSquare(Vector2Int center, int size)
         {
             //Cannot get items in square when size is <=0, smallest square is 1 (center item only)
             Assert.Greater(size, 0);
-
-            //If size 1, then just get the center item
-            if (size == 1)
-            {
-                return new T[1] { GetItemOnGrid(center) };
-            }
-
-            int halfSize = 1 + Mathf.CeilToInt(size / 2.0f);
             return GetItemsInRect(center, size, size);
         }
 
         /// <summary>
         /// Gets an array containing all the items that fit within a Rectangle area
         /// </summary>
-        /// <param name="center">Coordinate of central item, middle of the square. For even numbers (eg 4 cell square) this will be weighted to the central bottom left.</param>
-        /// <param name="width">Number of items in x direction.</param>
-        /// <param name="height">Number of items in y direction.</param>
+        /// <param name="center">Coordinate of central item, middle of the square.</param>
+        /// <param name="width">Number of items in x direction away from center.</param>
+        /// <param name="height">Number of items in y direction away from center.</param>
         /// <returns>Returns Array of T.</returns>
         public static T[] GetItemsInRect(Vector2Int center, int width, int height)
         {
@@ -101,36 +88,24 @@ namespace Gameplay
 
             //Items we will return
             List<T> listOfItems = new();
+            Vector2Int origin = center - new Vector2Int(0, height); //Start at top
+            Vector2Int xDir = Vector2Int.right;
+            Vector2Int[] directions = { xDir, xDir * -1 };
 
-            //Area, Half height
-            int area = height * width;
-            int halfHeight = height / 2;
-            int halfWidth = width / 2;
+            //height *= 2;
 
-            //Loop over the area and add items to our return list
-            int xOffset = 0;
-            int yOffset = 0;
-            for (int i = 0; i < area; i++)
+            //Double to get omni-directional rect, centered on Center
+            //height *= 2;
+            //width *= 2;
+
+            for (int i = 0; i < (height * 2) + 1; i++)
             {
-                //Get grid coordinate and item at that location
-                Vector2Int gridLocation =
-                    new Vector2Int(xOffset + center.x - halfWidth, yOffset + center.y - halfHeight);
-
-                //Try get the item, then add it if we succeeded. Failure suggests item is outside the play area
-                T nextItem = GetItemOnGrid(gridLocation);
-                if (nextItem)
-                {
-                    listOfItems.Add(nextItem);
-                }
-
-                //Increment, reset X if we've reached width
-                xOffset++;
-                if (xOffset == width)
-                {
-                    xOffset = 0;
-                    yOffset++;
-                }
+                listOfItems.AddRange(GetItemsInLines(origin, directions, width + 1, false));
+                origin += Vector2Int.up;
             }
+
+            //Remove duplicates
+            listOfItems.RemoveDuplicates();
 
             //Return our finished array
             return listOfItems.ToArray();
@@ -302,7 +277,7 @@ namespace Gameplay
             if (item) listOfItems.Add(item);
 
             //Get all pieces in a line in X and Y dir
-            listOfItems.AddRange(GetItemsInLines(center, directions, distance, true));
+            listOfItems.AddRange(GetItemsInLines(center, directions, distance + 1, true));
 
             //Remove any duplicates, can happen when comboing checks
             listOfItems.RemoveDuplicates();
@@ -317,7 +292,7 @@ namespace Gameplay
         /// <param name="center">Coordinate of central item.</param>
         /// <param name="distance">How far from center can it move?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInDiamond(Vector2Int center, int distance)
+        public static T[] GetItemsInDiagonalCross(Vector2Int center, int distance)
         {
             //Items to return
             List<T> listOfItems = new();
@@ -332,7 +307,7 @@ namespace Gameplay
             if (item) listOfItems.Add(item);
 
             //Get all pieces in a line in X and Y dir
-            listOfItems.AddRange(GetItemsInLines(center, directions, distance, true));
+            listOfItems.AddRange(GetItemsInLines(center, directions, distance + 1, true));
 
             //Remove any duplicates, can happen when comboing checks
             listOfItems.RemoveDuplicates();
@@ -351,7 +326,7 @@ namespace Gameplay
         {
             List<T> returnList = new();
             returnList.AddRange(GetItemsInCross(center, distance));
-            returnList.AddRange(GetItemsInDiamond(center, distance));
+            returnList.AddRange(GetItemsInDiagonalCross(center, distance));
             return returnList.ToArray();
         }
 
