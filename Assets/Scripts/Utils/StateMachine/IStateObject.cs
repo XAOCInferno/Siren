@@ -7,7 +7,7 @@ namespace Utils.StateMachine
     {
         public Task Init();
         public void SubscribeToStateChangedEvent();
-        public void UnSubscribeToStateChangedEvent();
+        public void UnSubscribeFromStateChangedEvent();
         public int OnStateChanged(EnumStateMachine<T>.StateChangedEventPayload payload);
     }
 }

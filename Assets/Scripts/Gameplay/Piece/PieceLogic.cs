@@ -27,7 +27,7 @@ namespace Gameplay.Piece
 
         private void OnDestroy()
         {
-            UnSubscribeToStateChangedEvent();
+            UnSubscribeFromStateChangedEvent();
         }
 
         public async Task Init()
@@ -40,7 +40,7 @@ namespace Gameplay.Piece
             _pieceObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
         }
 
-        public void UnSubscribeToStateChangedEvent()
+        public void UnSubscribeFromStateChangedEvent()
         {
             _pieceObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
         }

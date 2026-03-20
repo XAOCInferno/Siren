@@ -22,7 +22,7 @@ namespace Gameplay.Tile
 
         private void OnDestroy()
         {
-            UnSubscribeToStateChangedEvent();
+            UnSubscribeFromStateChangedEvent();
         }
 
         public async Task Init()
@@ -35,7 +35,7 @@ namespace Gameplay.Tile
             tileObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
         }
 
-        public void UnSubscribeToStateChangedEvent()
+        public void UnSubscribeFromStateChangedEvent()
         {
             tileObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
         }

@@ -51,7 +51,7 @@ namespace Gameplay.Card
 
         private void OnDestroy()
         {
-            UnSubscribeToStateChangedEvent();
+            UnSubscribeFromStateChangedEvent();
         }
 
         public async Task Init()
@@ -63,7 +63,7 @@ namespace Gameplay.Card
         {
             _cardObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
         }
-        public void UnSubscribeToStateChangedEvent()
+        public void UnSubscribeFromStateChangedEvent()
         {
             _cardObject.GetState().GetLogicStateMachine().UnsubscribeToStateChangedCallback(this);
         }
