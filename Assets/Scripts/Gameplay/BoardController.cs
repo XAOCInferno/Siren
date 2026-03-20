@@ -1,13 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 using Debug;
 using Gameplay.Piece;
 using Gameplay.Tile;
 using Global;
 using JetBrains.Annotations;
 using NUnit.Framework;
+using Unity.VisualScripting;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 using Utils;
+using Quaternion = UnityEngine.Quaternion;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 namespace Gameplay
 {
@@ -216,6 +224,135 @@ namespace Gameplay
 
             //Return, converted to array
             return listOfItems.ToArray();
+        }
+
+        /// <summary>
+        /// Gets an array containing all the items that fit within a line
+        /// </summary>
+        /// <param name="origin">Coordinate of origin of start of the line.</param>
+        /// <param name="dir">Which direction is line pointing in?</param>
+        /// <param name="distance">How long is the line?</param>
+        /// <param name="ignoreOrigin">Should we ignore the origin itself?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T[] GetItemsInLine(Vector2Int origin, Vector2Int dir, int distance, bool ignoreOrigin = false)
+        {
+            //Items to return
+            List<T> listOfItems = new();
+
+            //Ensure direction is clamped correctly
+            dir.Clamp(new Vector2Int(-1, -1), new Vector2Int(1, 1));
+
+            //Calculate all items in circle
+            for (int i = ignoreOrigin ? 1 : 0; i < distance; i++)
+            {
+                T item = GetItemOnGrid(origin + (dir * i));
+                if (item)
+                {
+                    listOfItems.Add(item);
+                }
+            }
+
+            return listOfItems.ToArray();
+        }
+
+        /// <summary>
+        /// Gets an array containing all the items that fit within a line
+        /// </summary>
+        /// <param name="origin">Coordinate of origin of start of the line.</param>
+        /// <param name="dirs">Which directions is line pointing in?</param>
+        /// <param name="distance">How long is the line?</param>
+        /// <param name="ignoreOrigin">Should we ignore the origin itself?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T[] GetItemsInLines(Vector2Int origin, Vector2Int[] dirs, int distance, bool ignoreOrigin = false)
+        {
+            //Items to return
+            List<T> listOfItems = new();
+
+            //Add for all directions
+            for (int i = 0; i < dirs.Length; i++)
+            {
+                listOfItems.AddRange(GetItemsInLine(origin, dirs[i], distance, ignoreOrigin));
+            }
+
+            //Remove any duplicates which can happen if lines cross
+            listOfItems.RemoveDuplicates();
+
+            //Return
+            return listOfItems.ToArray();
+        }
+
+        /// <summary>
+        /// Gets an array containing all the items that fit within a + shaped cross
+        /// </summary>
+        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="distance">How far from center can it move?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T[] GetItemsInCross(Vector2Int center, int distance)
+        {
+            //Items to return
+            List<T> listOfItems = new();
+
+            //XY Directions
+            Vector2Int xDir = Vector2Int.right;
+            Vector2Int yDir = Vector2Int.up;
+            Vector2Int[] directions = { xDir, yDir, xDir * -1, yDir * -1 };
+
+            //Get origin point
+            T item = GetItemOnGrid(center);
+            if (item) listOfItems.Add(item);
+
+            //Get all pieces in a line in X and Y dir
+            listOfItems.AddRange(GetItemsInLines(center, directions, distance, true));
+
+            //Remove any duplicates, can happen when comboing checks
+            listOfItems.RemoveDuplicates();
+
+            //Return
+            return listOfItems.ToArray();
+        }
+
+        /// <summary>
+        /// Gets an array containing all the items that fit within an x shaped cross
+        /// </summary>
+        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="distance">How far from center can it move?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T[] GetItemsInDiamond(Vector2Int center, int distance)
+        {
+            //Items to return
+            List<T> listOfItems = new();
+
+            //XY Directions
+            Vector2Int xDir = new Vector2Int(1, 1);
+            Vector2Int yDir = new Vector2Int(-1, 1);
+            Vector2Int[] directions = { xDir, yDir, xDir * -1, yDir * -1 };
+
+            //Get origin point
+            T item = GetItemOnGrid(center);
+            if (item) listOfItems.Add(item);
+
+            //Get all pieces in a line in X and Y dir
+            listOfItems.AddRange(GetItemsInLines(center, directions, distance, true));
+
+            //Remove any duplicates, can happen when comboing checks
+            listOfItems.RemoveDuplicates();
+
+            //Return
+            return listOfItems.ToArray();
+        }
+
+        /// <summary>
+        /// Gets an array containing all the items that fit within an combined cross and diamond shaped star
+        /// </summary>
+        /// <param name="center">Coordinate of central item.</param>
+        /// <param name="distance">How far from center can it move?</param>
+        /// <returns>Returns Array of T.</returns>
+        public static T[] GetItemsInStar(Vector2Int center, int distance)
+        {
+            List<T> returnList = new();
+            returnList.AddRange(GetItemsInCross(center, distance));
+            returnList.AddRange(GetItemsInDiamond(center, distance));
+            return returnList.ToArray();
         }
 
         /// <summary>
