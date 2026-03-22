@@ -68,7 +68,7 @@ namespace Gameplay
             return new ActionResult(true);
         }
 
-        public static ActionResult CanPlayPieceAtLocation(PieceData pieceData, Vector2Int gridLocation)
+        public static BoardSystem<TileObject>.GetItemsInAreaResponse GetTilesPieceWouldOccupy(PieceData pieceData, Vector2Int gridLocation)
         {
             //Get items in our shape
             BoardSystem<TileObject>.GetItemsInAreaResponse response = pieceData.GetSizeShape() switch
@@ -79,6 +79,13 @@ namespace Gameplay
                     pieceData.GetBaseSize()),
                 _ => throw new ArgumentOutOfRangeException()
             };
+            return response;
+        }
+
+        public static ActionResult CanPlayPieceAtLocation(PieceData pieceData, Vector2Int gridLocation)
+        {
+            //Get items in our shape
+            BoardSystem<TileObject>.GetItemsInAreaResponse response = GetTilesPieceWouldOccupy(pieceData, gridLocation);
 
             //Check if all expected tiles are present
             if (response.isMissingExpectedItems)

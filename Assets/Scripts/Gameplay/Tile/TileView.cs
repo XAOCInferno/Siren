@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Debug;
+using Gameplay.Card;
+using Gameplay.Piece;
 using NUnit.Framework;
 using UnityEngine;
 using Utils;
@@ -16,6 +19,8 @@ namespace Gameplay.Tile
         [SerializeField] private MeshRenderer[] meshRenderers;
 
         protected Vector3 startingPos = Vector3.zero;
+
+        private readonly List<TileObject> _currentlyPreviewedTiles = new();
 
         protected TileObject tileObject;
 
@@ -70,20 +75,50 @@ namespace Gameplay.Tile
             switch (payload.newState)
             {
                 case ETileViewState.Idle:
+                    //Hide preview if we were previously previewing piece
+                    if (payload.oldState == ETileViewState.Hovered && !GameplaySystem.GetCardBeingPlayed())
+                    {
+                        PiecePreviewSingleton.instance.Hide();
+                    }
+
+                    //Hide any other tiles we're previewing
+                    for (int i = 0; i < _currentlyPreviewedTiles.Count; i++)
+                    {
+                        _currentlyPreviewedTiles[i].GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
+                    }
+
+                    _currentlyPreviewedTiles.Clear();
+
+                    //Set idle state
                     MoveToIdlePosition();
                     SetIdleMaterial();
                     break;
                 case ETileViewState.Hovered:
-                    MoveToActivePosition();
-                    SetIdleMaterial();
+                    CardObject card = GameplaySystem.GetCardBeingPlayed();
+                    if (card)
+                    {
+                        HandleCardPlayPreview(card);
+                    }
+                    else
+                    {
+                        SetIdleMaterial();
+                        MoveToActivePosition();
+                    }
+
                     break;
                 case ETileViewState.PreviewAttack:
+                    PiecePreviewSingleton.instance.Hide();
                     MoveToActivePosition();
                     SetPreviewAttackMaterial();
                     break;
                 case ETileViewState.PreviewMove:
+                    PiecePreviewSingleton.instance.Hide();
                     MoveToActivePosition();
                     SetPreviewMoveMaterial();
+                    break;
+                case ETileViewState.PreviewPlayCard:
+                    MoveToActivePosition();
+                    SetIdleMaterial();
                     break;
             }
 
@@ -158,6 +193,22 @@ namespace Gameplay.Tile
             {
                 meshRenderer.SetMaterials(new List<Material> { mat });
             }
+        }
+
+        protected void HandleCardPlayPreview(CardObject card)
+        {
+            var response = GameplaySystem.GetTilesPieceWouldOccupy(
+                card.GetLogic().GetCardData().GetAssociatedPieceData(),
+                tileObject.GetState().GetGridLocation());
+
+            for (int i = 0; i < response.foundItems.Length; i++)
+            {
+                response.foundItems[i].GetState().GetViewStateMachine().SetState(ETileViewState.PreviewPlayCard);
+                _currentlyPreviewedTiles.Add(response.foundItems[i]);
+            }
+
+            PiecePreviewSingleton.instance.PreviewPieceOnTile(
+                card.GetLogic().GetCardData().GetAssociatedPieceData(), tileObject);
         }
     }
 }

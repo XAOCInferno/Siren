@@ -18,7 +18,8 @@ namespace Gameplay.Tile
         Idle,
         Hovered,
         PreviewMove,
-        PreviewAttack
+        PreviewAttack,
+        PreviewPlayCard
     }
 
     public class TileState : MonoBehaviour
