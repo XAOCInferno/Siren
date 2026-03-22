@@ -1,7 +1,8 @@
 using System;
-using Gameplay;
+using CustomCamera;
 using Gameplay.Card;
 using Gameplay.Piece;
+using Input;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -169,6 +170,52 @@ namespace Global
         public static void InvokeOnRemoveCardFromHand([CanBeNull] object sender, RemoveCardFromHandPayload payload)
         {
             OnRemoveCardFromHand?.Invoke(sender, payload);
+        }
+    }
+
+    public static class InputEvents
+    {
+        //Camera Move Input Event
+        public class InputMoveCameraEventPayload : EventArgs
+        {
+            public readonly EMoveCameraDirection direction;
+            public readonly bool fromInput;
+
+            public InputMoveCameraEventPayload(EMoveCameraDirection direction, bool fromInput)
+            {
+                this.direction = direction;
+                this.fromInput = fromInput;
+            }
+        }
+
+        public static event EventHandler<InputMoveCameraEventPayload> OnInputMoveCamera;
+
+        public static void InvokeOnInputMoveCamera([CanBeNull] object sender, InputMoveCameraEventPayload payload)
+        {
+            OnInputMoveCamera?.Invoke(sender, payload);
+        }
+    }
+
+    public static class CameraEvents
+    {
+        //Input Events
+        public class CameraMovedEventPayload : EventArgs
+        {
+            public readonly ECameraViewMode oldMode;
+            public readonly ECameraViewMode newMode;
+
+            public CameraMovedEventPayload(ECameraViewMode oldMode, ECameraViewMode newMode)
+            {
+                this.oldMode = oldMode;
+                this.newMode = newMode;
+            }
+        }
+
+        public static event EventHandler<CameraMovedEventPayload> OnCameraMoved;
+
+        public static void InvokeOnCameraMoved([CanBeNull] object sender, CameraMovedEventPayload payload)
+        {
+            OnCameraMoved?.Invoke(sender, payload);
         }
     }
 }

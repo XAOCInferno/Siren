@@ -125,12 +125,12 @@ namespace Gameplay.Tile
 
         protected void MoveToActivePosition()
         {
-            tileObject.GetMoveableObject().MoveToLocation(startingPos + (Vector3.up * yMoveOnHover), moveTime);
+            tileObject.GetMoveableObject().MoveTo(startingPos + (Vector3.up * yMoveOnHover), moveTime);
         }
 
         protected void MoveToIdlePosition()
         {
-            tileObject.GetMoveableObject().MoveToLocation(startingPos, moveTime);
+            tileObject.GetMoveableObject().MoveTo(startingPos, moveTime);
         }
 
         protected void SetIdleMaterial()

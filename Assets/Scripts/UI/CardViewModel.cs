@@ -22,6 +22,7 @@ namespace UI
 
         protected readonly CardViewModelData cardViewModelData = new();
 
+        public CardViewModelData GetViewModelData() => cardViewModelData;
         public void SetViewModelData(CardViewModelData data)
         {
             SetMainImage(data.mainImage);

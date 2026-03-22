@@ -29,6 +29,12 @@ namespace Interaction
             interactable.SetSelected();
         }
 
+        public static void ClearSelected()
+        {
+            _selected?.SetIdle();
+            _selected = null;
+        }
+
         public static void SetInteractable(IInteractable interactable, bool isInteractable)
         {
             interactable.SetInteractable(isInteractable);

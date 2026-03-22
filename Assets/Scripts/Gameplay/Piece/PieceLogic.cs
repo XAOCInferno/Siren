@@ -1,9 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Debug;
-using Gameplay.Tile;
+using CustomCamera;
+using Global;
 using Interaction;
+using JetBrains.Annotations;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -21,13 +20,17 @@ namespace Gameplay.Piece
         private PieceObject _pieceObject;
         private PieceData _pieceData;
 
-        protected List<TileObject> currentPreviewedTiles = new();
-
         private void Awake()
         {
+            //Get our object
             _pieceObject = GetComponent<PieceObject>();
             Assert.NotNull(_pieceObject);
-            _pieceObject.GetState().GetLogicStateMachine().SubscribeToStateChangedCallback(this);
+            
+            //Subscribe to events
+            CameraEvents.OnCameraMoved += OnCameraMoved;
+            
+            //Subscribe to state machine
+            SubscribeToStateChangedEvent();
         }
 
         private void OnDestroy()
@@ -117,9 +120,6 @@ namespace Gameplay.Piece
             //State
             _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Idle);
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
-
-            //Clear previewed if we had any
-            ClearAnyPreviewedTiles();
         }
 
         public void SetHovered()
@@ -127,72 +127,13 @@ namespace Gameplay.Piece
             //State
             _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Hovered);
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
-
-            //Clear previewed if we had any
-            ClearAnyPreviewedTiles();
         }
 
         public void SetSelected()
         {
-            //Get our movement settings
-            TileObject[] tilesInMovementRange;
-            Vector2Int gridLocation = _pieceObject.GetState().GetGridLocation();
-            EPieceMovementType movementType = _pieceData.GetMovementType();
-            int movementSpeed = _pieceData.GetBaseMovement();
-
             //Select the piece
             _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.SelectedOnBoard);
             _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Selected);
-
-            //If piece cannot move, we can return early now
-            if (movementType == EPieceMovementType.None || movementSpeed == 0) return;
-
-            //Preview move logic
-            //Get tiles that are in our range
-            switch (movementType)
-            {
-                case EPieceMovementType.Cross:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInCross(gridLocation, movementSpeed);
-                    break;
-                case EPieceMovementType.Diagonal:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInDiagonalCross(gridLocation, movementSpeed);
-                    break;
-                case EPieceMovementType.Star:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInStar(gridLocation, movementSpeed);
-                    break;
-                case EPieceMovementType.Circle:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInCircle(gridLocation, movementSpeed);
-                    break;
-                case EPieceMovementType.Square:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInSquare(gridLocation, movementSpeed);
-                    break;
-                case EPieceMovementType.LShaped:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInLShapeCross(gridLocation, movementSpeed);
-                    break;
-                default:
-                    DebugSystem.Warn(
-                        $"Unexpected movement type {movementType}, this is not supported. Piece will be treated as immovable, though code should have returned early before thie point.");
-                    return;
-            }
-
-            //Preview movement on all tiles in range, if any
-            for (int i = 0; i < tilesInMovementRange.Length; i++)
-            {
-                //Check if the tiles are occupied by an enemy, if they are, then we preview for attack, otherwise for move
-                var occupier = tilesInMovementRange[i].GetState().GetOccupier();
-                if (occupier && occupier._pieceObject.GetState().GetOwnerPlayer() !=
-                    _pieceObject.GetState().GetOwnerPlayer())
-                {
-                    tilesInMovementRange[i].GetLogic().OnStartAttackPreview();
-                }
-                else
-                {
-                    tilesInMovementRange[i].GetLogic().OnStartMovePreview();
-                }
-            }
-
-            //Save a copy so we can deactivate them later
-            currentPreviewedTiles = tilesInMovementRange.ToList();
         }
 
         public void SetInteractable(bool interactable)
@@ -201,25 +142,25 @@ namespace Gameplay.Piece
         }
         //~IInteractable End
 
-        protected void ClearAnyPreviewedTiles()
-        {
-            //Return early if we have no tiles to prevent null ref in foreach
-            if (currentPreviewedTiles.Count == 0) return;
-
-            //Iterate over all tiels and reset them to idle state
-            foreach (TileObject previewedTile in currentPreviewedTiles)
-            {
-                previewedTile.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
-            }
-
-            //Clear our list
-            currentPreviewedTiles.Clear();
-        }
-
-        public void SetCardData(PieceData newPieceData)
+        public PieceData GetPieceData() => _pieceData;
+        public void SetPieceData(PieceData newPieceData)
         {
             //Our Data
             _pieceData = newPieceData;
+        }
+
+        //TODO: Block interaction when not in board state
+        protected void OnCameraMoved([CanBeNull] object sender, CameraEvents.CameraMovedEventPayload payload)
+        {
+            //If we move to anywhere except the board then return
+            if (payload.newMode == ECameraViewMode.Board) return;
+
+            //We've moved away from board, so unselect this card
+            EnumStateMachine<EPieceViewState> stateMachine = _pieceObject.GetState().GetViewStateMachine();
+            if (stateMachine.GetState() == EPieceViewState.Selected)
+            {
+                stateMachine.SetState(EPieceViewState.Idle);
+            }
         }
     }
 }

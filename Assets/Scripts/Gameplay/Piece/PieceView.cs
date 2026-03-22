@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using CustomCamera;
 using Debug;
+using Gameplay.Card;
+using Gameplay.Tile;
 using NUnit.Framework;
 using UnityEngine;
 using Utils;
@@ -20,8 +24,15 @@ namespace Gameplay.Piece
 
         private readonly Dictionary<EPieceViewState, Material> _materialMap = new();
 
+        protected List<TileObject> currentPreviewedTiles = new();
+        private PieceObject _pieceObject;
+
         private void Awake()
         {
+            //Get our object
+            _pieceObject = GetComponent<PieceObject>();
+            Assert.NotNull(_pieceObject);
+            
             //All pieces must have a mesh
             Assert.NotNull(pieceMesh);
 
@@ -92,12 +103,30 @@ namespace Gameplay.Piece
             switch (payload.newState)
             {
                 case EPieceViewState.Idle:
+                    //Clear selection specific if we are no longer selected
+                    if (payload.oldState == EPieceViewState.Selected)
+                    {
+                        ClearSelection();
+                    }
+
+                    //Set idle state
                     SetIdle();
                     break;
                 case EPieceViewState.Hovered:
+                    //Clear selection specific if we are no longer selected
+                    if (payload.oldState == EPieceViewState.Selected)
+                    {
+                        ClearSelection();
+                    }
+
+                    //Set hovered
                     SetHovered();
                     break;
                 case EPieceViewState.Selected:
+                    //Change view
+                    CameraSubsystem.GetMainCamera().ChangeCameraViewMode(ECameraViewMode.Board);
+
+                    //Set selected state
                     SetSelected();
                     break;
             }
@@ -143,20 +172,112 @@ namespace Gameplay.Piece
             meshFilter.mesh = newMesh;
         }
 
+        protected void ClearSelection()
+        {
+            //Clear previewed if we had any
+            ClearAnyPreviewedTiles();
+            
+            //Return to hand
+            CameraSubsystem.GetMainCamera().ChangeCameraViewMode(ECameraViewMode.Hand);
+        }
+
         public void SetHovered()
         {
+            //Clear previewed if we had any
+            ClearAnyPreviewedTiles();
+            
             if (!_materialMap.TryGetValue(EPieceViewState.Hovered, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
         }
 
         public void SetSelected()
         {
+            //Get our movement settings
+            TileObject[] tilesInMovementRange;
+            Vector2Int gridLocation = _pieceObject.GetState().GetGridLocation();
+            PieceData pieceData = _pieceObject.GetLogic().GetPieceData();
+            EPieceMovementType movementType = pieceData.GetMovementType();
+            int movementSpeed = pieceData.GetBaseMovement();
+
+            //Select the piece
+            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.SelectedOnBoard);
+            _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Selected);
+
+            //If piece cannot move, we can return early now
+            if (movementType == EPieceMovementType.None || movementSpeed == 0) return;
+
+            //Preview move logic
+            //Get tiles that are in our range
+            switch (movementType)
+            {
+                case EPieceMovementType.Cross:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInCross(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.Diagonal:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInDiagonalCross(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.Star:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInStar(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.Circle:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInCircle(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.Square:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInSquare(gridLocation, movementSpeed);
+                    break;
+                case EPieceMovementType.LShaped:
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInLShapeCross(gridLocation, movementSpeed);
+                    break;
+                default:
+                    DebugSystem.Warn(
+                        $"Unexpected movement type {movementType}, this is not supported. Piece will be treated as immovable, though code should have returned early before thie point.");
+                    return;
+            }
+
+            //Preview movement on all tiles in range, if any
+            for (int i = 0; i < tilesInMovementRange.Length; i++)
+            {
+                //Check if the tiles are occupied by an enemy, if they are, then we preview for attack, otherwise for move
+                var occupier = tilesInMovementRange[i].GetState().GetOccupier();
+                if (occupier && occupier.GetComponent<PieceState>().GetOwnerPlayer() !=
+                    _pieceObject.GetState().GetOwnerPlayer())
+                {
+                    tilesInMovementRange[i].GetLogic().OnStartAttackPreview();
+                }
+                else
+                {
+                    tilesInMovementRange[i].GetLogic().OnStartMovePreview();
+                }
+            }
+
+            //Save a copy so we can deactivate them later
+            currentPreviewedTiles = tilesInMovementRange.ToList();
+            
+            //Change to selected material
             if (!_materialMap.TryGetValue(EPieceViewState.Selected, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
         }
 
+        protected void ClearAnyPreviewedTiles()
+        {
+            //Return early if we have no tiles to prevent null ref in foreach
+            if (currentPreviewedTiles.Count == 0) return;
+
+            //Iterate over all tiels and reset them to idle state
+            foreach (TileObject previewedTile in currentPreviewedTiles)
+            {
+                previewedTile.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
+            }
+
+            //Clear our list
+            currentPreviewedTiles.Clear();
+        }
+
         public void SetIdle()
         {
+            //Clear previewed if we had any
+            ClearAnyPreviewedTiles();
+            
             if (!_materialMap.TryGetValue(EPieceViewState.Idle, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
         }

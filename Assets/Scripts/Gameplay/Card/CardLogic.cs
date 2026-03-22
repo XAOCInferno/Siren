@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Behaviours;
+using CustomCamera;
 using Debug;
 using Gameplay.Tile;
 using Global;
@@ -45,6 +46,7 @@ namespace Gameplay.Card
         {
             _cardObject = gameObject.GetComponent<CardObject>();
             Assert.NotNull(_cardObject);
+            CameraEvents.OnCameraMoved += OnCameraMoved;
             SubscribeToStateChangedEvent();
         }
 
@@ -124,8 +126,11 @@ namespace Gameplay.Card
 
         public void SetSelected()
         {
+            //Set state to selected
             CardState state = _cardObject.GetState();
             state.GetInteractionStateMachine().SetState(EInteractionState.Selected);
+
+            //Save the new local card
             GameplaySystem.SetLocalCardBeingPlayed(_cardObject);
         }
 
@@ -244,6 +249,20 @@ namespace Gameplay.Card
             DebugSystem.Log($"Card {gameObject.name} is being played from hand");
             _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.SelectedInHand);
             InteractionSystem.SetSelected(this);
+        }
+        
+        //TODO: Block interaction when not in hand state
+        protected void OnCameraMoved([CanBeNull] object sender, CameraEvents.CameraMovedEventPayload payload)
+        {
+            //If we move to anywhere except the board then return
+            if (payload.newMode == ECameraViewMode.Board) return;
+            
+            //We've moved away from board, so unselect this card
+            EnumStateMachine<ECardLogicState> stateMachine = _cardObject.GetState().GetLogicStateMachine();
+            if (stateMachine.GetState() == ECardLogicState.SelectedInHand)
+            {
+                InteractionSystem.ClearSelected();
+            }
         }
     }
 }

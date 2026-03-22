@@ -1,5 +1,4 @@
-using System;
-using Behaviours;
+using CustomCamera;
 using Debug;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -19,7 +18,7 @@ namespace UI
 
         private void Start()
         {
-            SetCamera(CameraSubsystem.GetMainCamera());
+            SetCamera(CameraSubsystem.GetMainCamera().playerCamera);
         }
 
         private void SetCamera(Camera newCamera)
@@ -29,9 +28,9 @@ namespace UI
             DebugSystem.Log("Main camera changed");
         }
 
-        private void OnMainCameraChanged([CanBeNull] Camera oldCamera, Camera newCamera)
+        private void OnMainCameraChanged([CanBeNull] PlayerCamera oldCamera, PlayerCamera newCamera)
         {
-            SetCamera(newCamera);
+            SetCamera(newCamera.playerCamera);
         }
     }
 }

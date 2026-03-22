@@ -46,11 +46,6 @@ namespace Gameplay
             _cardBeingPlayed = null;
         }
 
-        public static void SetCardBeingPlayed(CardObject cardObject)
-        {
-            _cardBeingPlayed = cardObject;
-        }
-
         public static ActionResult PlayCard(Vector2Int gridLocation, Player.Player playedBy)
         {
             //Make sure we have a card to play, otherwise return fail
