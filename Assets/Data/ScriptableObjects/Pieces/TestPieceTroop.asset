@@ -15,5 +15,5 @@ MonoBehaviour:
   mesh: {fileID: 9119384719540017626, guid: 385a674b2ef66974b99b96f8128e901f, type: 3}
   baseMovement: 2
   movementType: 3
-  baseSize: 2
+  baseSize: 1
   sizeShapeType: 1

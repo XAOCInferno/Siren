@@ -1,4 +1,3 @@
-using System;
 using Debug;
 using Gameplay.Tile;
 using NUnit.Framework;
@@ -47,7 +46,7 @@ namespace Gameplay.Piece
                                       (connectionMkr.transform.localPosition * -1);
 
             //Scale
-            transform.localScale = Vector3.one * data.GetBaseSize();
+            transform.localScale = Vector3.one * data.GetMeshScale();
 
             //Visible
             meshFilter.gameObject.SetActive(true);

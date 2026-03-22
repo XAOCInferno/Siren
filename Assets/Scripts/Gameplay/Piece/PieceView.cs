@@ -33,6 +33,7 @@ namespace Gameplay.Piece
 
             //Mesh
             _meshRenderer = pieceMeshObject.GetComponent<MeshRenderer>();
+            Assert.NotNull(_meshRenderer);
 
             //Subscribe to state machine
             SubscribeToStateChangedEvent();
@@ -165,9 +166,15 @@ namespace Gameplay.Piece
 
         public void SetMesh(Mesh newMesh)
         {
+            //Get comps
             MeshFilter meshFilter = pieceMeshObject.GetComponent<MeshFilter>();
             Assert.IsNotNull(meshFilter);
+            MeshCollider meshCollider = pieceMeshObject.GetComponent<MeshCollider>();
+            Assert.IsNotNull(meshCollider);
+
+            //Set
             meshFilter.mesh = newMesh;
+            meshCollider.sharedMesh = newMesh;
         }
 
         protected void ClearSelection()

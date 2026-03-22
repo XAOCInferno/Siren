@@ -72,12 +72,15 @@ namespace Gameplay.Piece
         {
             InteractionSystem.SetInteractable(this, true);
             InteractionSystem.SetIdle(this);
+            gameObject.SetActive(true);
         }
 
         public void SetInActive()
         {
             InteractionSystem.SetInteractable(this, false);
             InteractionSystem.SetIdle(this);
+            gameObject.SetActive(false);
+
         }
         //~IPooledItem End
 
@@ -118,7 +121,7 @@ namespace Gameplay.Piece
 
             //Set Mesh
             _pieceObject.GetView().SetMesh(_pieceData.GetMesh());
-            _pieceObject.GetView().SetMeshScale(Vector3.one * _pieceData.GetBaseSize());
+            _pieceObject.GetView().SetMeshScale(Vector3.one * _pieceData.GetMeshScale());
         }
 
         //TODO: Block interaction when not in board state

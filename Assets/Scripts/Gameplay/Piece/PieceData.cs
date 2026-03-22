@@ -50,6 +50,7 @@ namespace Gameplay.Piece
 
         // Size
         public int GetBaseSize() => baseSize;
+        public int GetMeshScale() => baseSize * 2;
         public EPieceSizeShapeTypes GetSizeShape() => sizeShapeType;
     }
 }
