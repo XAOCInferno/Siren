@@ -25,10 +25,10 @@ namespace Gameplay.Piece
             //Get our object
             _pieceObject = GetComponent<PieceObject>();
             Assert.NotNull(_pieceObject);
-            
+
             //Subscribe to events
             CameraEvents.OnCameraMoved += OnCameraMoved;
-            
+
             //Subscribe to state machine
             SubscribeToStateChangedEvent();
         }
@@ -143,6 +143,7 @@ namespace Gameplay.Piece
         //~IInteractable End
 
         public PieceData GetPieceData() => _pieceData;
+
         public void SetPieceData(PieceData newPieceData)
         {
             //Our Data
@@ -159,7 +160,7 @@ namespace Gameplay.Piece
             EnumStateMachine<EPieceViewState> stateMachine = _pieceObject.GetState().GetViewStateMachine();
             if (stateMachine.GetState() == EPieceViewState.Selected)
             {
-                stateMachine.SetState(EPieceViewState.Idle);
+                InteractionSystem.SetIdle(this);
             }
         }
     }
