@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CustomCamera;
 using Debug;
-using Gameplay.Card;
 using Gameplay.Tile;
 using NUnit.Framework;
 using UnityEngine;
@@ -32,7 +31,7 @@ namespace Gameplay.Piece
             //Get our object
             _pieceObject = GetComponent<PieceObject>();
             Assert.NotNull(_pieceObject);
-            
+
             //All pieces must have a mesh
             Assert.NotNull(pieceMesh);
 
@@ -164,6 +163,10 @@ namespace Gameplay.Piece
             }
         }
 
+        public void SetMeshScale(Vector3 scale)
+        {
+            _pieceObject.GetTileScaleMkr().localScale = scale;
+        }
 
         protected void SetMesh(Mesh newMesh)
         {
@@ -176,7 +179,7 @@ namespace Gameplay.Piece
         {
             //Clear previewed if we had any
             ClearAnyPreviewedTiles();
-            
+
             //Return to hand
             CameraSubsystem.GetMainCamera().ChangeCameraViewMode(ECameraViewMode.Hand);
         }
@@ -185,7 +188,7 @@ namespace Gameplay.Piece
         {
             //Clear previewed if we had any
             ClearAnyPreviewedTiles();
-            
+
             if (!_materialMap.TryGetValue(EPieceViewState.Hovered, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
         }
@@ -211,22 +214,28 @@ namespace Gameplay.Piece
             switch (movementType)
             {
                 case EPieceMovementType.Cross:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInCross(gridLocation, movementSpeed);
+                    tilesInMovementRange =
+                        BoardSystem<TileObject>.GetItemsInCross(gridLocation, movementSpeed).foundItems;
                     break;
                 case EPieceMovementType.Diagonal:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInDiagonalCross(gridLocation, movementSpeed);
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInDiagonalCross(gridLocation, movementSpeed)
+                        .foundItems;
                     break;
                 case EPieceMovementType.Star:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInStar(gridLocation, movementSpeed);
+                    tilesInMovementRange =
+                        BoardSystem<TileObject>.GetItemsInStar(gridLocation, movementSpeed).foundItems;
                     break;
                 case EPieceMovementType.Circle:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInCircle(gridLocation, movementSpeed);
+                    tilesInMovementRange =
+                        BoardSystem<TileObject>.GetItemsInCircle(gridLocation, movementSpeed).foundItems;
                     break;
                 case EPieceMovementType.Square:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInSquare(gridLocation, movementSpeed);
+                    tilesInMovementRange =
+                        BoardSystem<TileObject>.GetItemsInSquare(gridLocation, movementSpeed).foundItems;
                     break;
                 case EPieceMovementType.LShaped:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInLShapeCross(gridLocation, movementSpeed);
+                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInLShapeCross(gridLocation, movementSpeed)
+                        .foundItems;
                     break;
                 default:
                     DebugSystem.Warn(
@@ -252,7 +261,7 @@ namespace Gameplay.Piece
 
             //Save a copy so we can deactivate them later
             currentPreviewedTiles = tilesInMovementRange.ToList();
-            
+
             //Change to selected material
             if (!_materialMap.TryGetValue(EPieceViewState.Selected, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
@@ -277,7 +286,7 @@ namespace Gameplay.Piece
         {
             //Clear previewed if we had any
             ClearAnyPreviewedTiles();
-            
+
             if (!_materialMap.TryGetValue(EPieceViewState.Idle, out var mat)) return;
             _meshRenderer.SetMaterials(new List<Material> { mat });
         }

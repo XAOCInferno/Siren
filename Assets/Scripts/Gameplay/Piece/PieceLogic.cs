@@ -148,6 +148,9 @@ namespace Gameplay.Piece
         {
             //Our Data
             _pieceData = newPieceData;
+
+            //Set Scale
+            _pieceObject.GetView().SetMeshScale(Vector3.one * _pieceData.GetBaseSize());
         }
 
         //TODO: Block interaction when not in board state

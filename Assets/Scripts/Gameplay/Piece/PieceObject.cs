@@ -10,6 +10,8 @@ namespace Gameplay.Piece
     {
         [SerializeField] private Transform tileConnectionMkr;
         public Transform GetTileConnectionMkr() => tileConnectionMkr;
+        [SerializeField] private Transform tileScaleMkr;
+        public Transform GetTileScaleMkr() => tileScaleMkr;
 
         public async Task Init()
         {
@@ -21,7 +23,7 @@ namespace Gameplay.Piece
             catch (Exception e)
             {
                 DebugSystem.Error($"Failed to Init due to {e.Message}");
-                throw; // TODO handle exception
+                throw;
             }
         }
     }

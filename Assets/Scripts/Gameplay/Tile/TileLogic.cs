@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Gameplay.Piece;
 using NUnit.Framework;
 using Player;
 using UnityEngine;
@@ -96,7 +97,6 @@ namespace Gameplay.Tile
             //Ensure this is a valid play
             if (tileObject.GetState().GetIsOccupiedByPiece())
                 return new ActionResult(false, "Cannot play card to tile as destination tile is occupied");
-
 
             return GameplaySystem.PlayCard(tileObject.GetState().GetGridLocation(),
                 playedByLocalPlayer ? PlayerSystem.GetLocalPlayer() : PlayerSystem.GetAIPlayer());

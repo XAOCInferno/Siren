@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.PieceData
   baseMovement: 2
   movementType: 3
+  baseSize: 2
+  sizeShapeType: 1

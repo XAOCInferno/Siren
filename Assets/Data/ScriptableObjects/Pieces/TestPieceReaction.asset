@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35083fe60b70f5e4ab052f784ea15f44, type: 3}
   m_Name: TestPieceReaction
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.PieceData
-  pieceID: 3
+  baseMovement: 0
+  movementType: 0
+  baseSize: 1
+  sizeType: 1

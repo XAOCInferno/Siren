@@ -1,5 +1,9 @@
+using System;
+using System.Linq;
 using Debug;
 using Gameplay.Card;
+using Gameplay.Piece;
+using Gameplay.Tile;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -50,7 +54,10 @@ namespace Gameplay
         {
             //Make sure we have a card to play, otherwise return fail
             if (!_cardBeingPlayed) return new ActionResult(false, "No card being played according to GameplaySystem.");
+            if (!CanPlayPieceAtLocation(_cardBeingPlayed.GetLogic().GetCardData().GetAssociatedPieceData(),
+                    gridLocation).isSuccess) return new ActionResult(false);
 
+            //Safe to continue
             //Play
             _cardBeingPlayed.GetLogic().PlayCard(gridLocation, playedBy);
 
@@ -58,6 +65,35 @@ namespace Gameplay
             ClearCardBeingPlayed();
 
             //Return success
+            return new ActionResult(true);
+        }
+
+        public static ActionResult CanPlayPieceAtLocation(PieceData pieceData, Vector2Int gridLocation)
+        {
+            //Get items in our shape
+            BoardSystem<TileObject>.GetItemsInAreaResponse response = pieceData.GetSizeShape() switch
+            {
+                EPieceSizeShapeTypes.Circle => BoardSystem<TileObject>.GetItemsInCircle(gridLocation,
+                    pieceData.GetBaseSize()),
+                EPieceSizeShapeTypes.Square => BoardSystem<TileObject>.GetItemsInSquare(gridLocation,
+                    pieceData.GetBaseSize()),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            //Check if all expected tiles are present
+            if (response.isMissingExpectedItems)
+                return new ActionResult(false,
+                    $"No space to play card at location {gridLocation} as object would go out of bounds.");
+
+            //Check for objects being occupied
+            if (response.foundItems.Any(t => t.GetState().GetLogicStateMachine().GetState() ==
+                                             ETileLogicState.OccupiedByPiece))
+            {
+                return new ActionResult(false,
+                    $"No space to play card at location {gridLocation} as required tile is occupied.");
+            }
+
+            //Success
             return new ActionResult(true);
         }
     }

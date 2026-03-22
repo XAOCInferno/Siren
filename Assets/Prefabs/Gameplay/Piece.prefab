@@ -1,5 +1,37 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &266134649549715145
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4377823615583912558}
+  m_Layer: 0
+  m_Name: VisualsScaleParent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4377823615583912558
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 266134649549715145}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children:
+  - {fileID: 4999560461677630787}
+  m_Father: {fileID: 9167560397500044620}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4143298357422286407
 GameObject:
   m_ObjectHideFlags: 0
@@ -24,11 +56,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4143298357422286407}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.5, y: -0.5, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 4377823615583912558}
   m_Father: {fileID: 6193927212131786125}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6379527258099078197
@@ -66,7 +99,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9167560397500044620}
-  - {fileID: 4999560461677630787}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6891145854463075511
@@ -82,6 +114,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Piece.PieceObject
   tileConnectionMkr: {fileID: 9167560397500044620}
+  tileScaleMkr: {fileID: 4377823615583912558}
 --- !u!114 &3813222921458950428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,6 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38a08a11d410e7c439f12c5de87eae07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Piece.PieceState
+  interactable: 0
 --- !u!114 &1163622125027051723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -147,7 +181,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 6193927212131786125}
+    m_TransformParent: {fileID: 4377823615583912558}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 385a674b2ef66974b99b96f8128e901f, type: 3}
       propertyPath: m_LocalScale.x
@@ -167,7 +201,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 385a674b2ef66974b99b96f8128e901f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 385a674b2ef66974b99b96f8128e901f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -201,6 +235,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5754084199372789682, guid: 385a674b2ef66974b99b96f8128e901f, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
     - target: {fileID: 919132149155446097, guid: 385a674b2ef66974b99b96f8128e901f, type: 3}
       propertyPath: m_Name
       value: DefaultPiece

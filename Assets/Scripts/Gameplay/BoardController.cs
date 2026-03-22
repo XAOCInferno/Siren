@@ -7,7 +7,6 @@ using Global;
 using JetBrains.Annotations;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Utils;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
@@ -15,12 +14,28 @@ using Vector3 = UnityEngine.Vector3;
 
 namespace Gameplay
 {
+    //TODO: It seems inefficient converting from list to array here. Should refactor to return lists instead of arrays
+
     /// <summary>
     /// System handling a grid with items on it.
     /// T: Represents which layer we are occupying. EG: Tile layer, Piece layer. Items on different layers will not block each other and will need further checks if this is required. 
     /// </summary>
     public static class BoardSystem<T> where T : UnityEngine.Object
     {
+        public struct GetItemsInAreaResponse
+        {
+            public T[] foundItems;
+
+            public bool
+                isMissingExpectedItems; //Any items we were expecing are missing? eg if the grid locations were outside the grid
+
+            public GetItemsInAreaResponse(T[] foundItems, bool isMissingExpectedItems)
+            {
+                this.foundItems = foundItems;
+                this.isMissingExpectedItems = isMissingExpectedItems;
+            }
+        }
+
         private static T[,] _items = new T[0, 0];
 
         /// <summary>
@@ -82,7 +97,7 @@ namespace Gameplay
         /// <param name="center">Coordinate of central item, middle of the square.</param>
         /// <param name="size">How large the square area is. Indicates size from center in all directions eg 1 = 3x3, 2 = 5x5.</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInSquare(Vector2Int center, int size)
+        public static GetItemsInAreaResponse GetItemsInSquare(Vector2Int center, int size)
         {
             //Cannot get items in square when size is <=0, smallest square is 1 (center item only)
             Assert.Greater(size, 0);
@@ -96,7 +111,7 @@ namespace Gameplay
         /// <param name="width">Number of items in x direction away from center.</param>
         /// <param name="height">Number of items in y direction away from center.</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInRect(Vector2Int center, int width, int height)
+        public static GetItemsInAreaResponse GetItemsInRect(Vector2Int center, int width, int height)
         {
             //Ensure we have valid size, size of 0 will never provide any items
             Assert.Greater(height, 0);
@@ -107,16 +122,17 @@ namespace Gameplay
             Vector2Int origin = center - new Vector2Int(0, height); //Start at top
             Vector2Int xDir = Vector2Int.right;
             Vector2Int[] directions = { xDir, xDir * -1 };
-
-            //height *= 2;
-
-            //Double to get omni-directional rect, centered on Center
-            //height *= 2;
-            //width *= 2;
+            bool isMissingExpectedItems = false;
 
             for (int i = 0; i < (height * 2) + 1; i++)
             {
-                listOfItems.AddRange(GetItemsInLines(origin, directions, width + 1, false));
+                GetItemsInAreaResponse response = GetItemsInLines(origin, directions, width + 1, false);
+                if (response.isMissingExpectedItems)
+                {
+                    isMissingExpectedItems = true;
+                }
+
+                listOfItems.AddRange(response.foundItems);
                 origin += Vector2Int.up;
             }
 
@@ -124,7 +140,7 @@ namespace Gameplay
             listOfItems.RemoveDuplicates();
 
             //Return our finished array
-            return listOfItems.ToArray();
+            return new GetItemsInAreaResponse(listOfItems.ToArray(), isMissingExpectedItems);
         }
 
         /// <summary>
@@ -133,10 +149,12 @@ namespace Gameplay
         /// <param name="center">Coordinate of central item, middle of the circle. Unlike square, this will ALWAYS be the central item.</param>
         /// <param name="radius">How large should circle be. Value of 1 is the central item + 1 in every direction, increasing by +1 item in every direction.</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInCircle(Vector2Int center, int radius)
+        public static GetItemsInAreaResponse GetItemsInCircle(Vector2Int center, int radius)
         {
             //Items to return
             List<T> listOfItems = new();
+
+            bool isMissingExpectedItems = false;
 
             //Y Bounds of circle
             int top = Mathf.CeilToInt(center.y - radius),
@@ -157,10 +175,14 @@ namespace Gameplay
                     {
                         listOfItems.Add(item);
                     }
+                    else
+                    {
+                        isMissingExpectedItems = true;
+                    }
                 }
             }
 
-            return listOfItems.ToArray();
+            return new GetItemsInAreaResponse(listOfItems.ToArray(), isMissingExpectedItems);
         }
 
         /// <summary>
@@ -171,10 +193,13 @@ namespace Gameplay
         /// <param name="dirAngle">Which direction is angle pointing? 0-Left, 0.25-Up, 0.5-Right, 0.75-Down.</param>
         /// <param name="curveAngle">How large will the arc be? 1-HalfCircle, 0.5-QuarterCircle, etc.</param>
         /// <returns>Returns an array of items that lie inside the arc defined in params.</returns>
-        public static T[] GetItemsInArc(Vector2Int center, int arcLength, float dirAngle, float curveAngle)
+        public static GetItemsInAreaResponse GetItemsInArc(Vector2Int center, int arcLength, float dirAngle,
+            float curveAngle)
         {
             //Return list
             List<T> listOfItems = new();
+
+            bool isMissingExpectedItems = false;
 
             //Convert to useable correctly formatted values for formula
             dirAngle = Math.Clamp(1 - dirAngle, 0, 1);
@@ -209,12 +234,16 @@ namespace Gameplay
                         {
                             listOfItems.Add(item);
                         }
+                        else
+                        {
+                            isMissingExpectedItems = true;
+                        }
                     }
                 }
             }
 
             //Return, converted to array
-            return listOfItems.ToArray();
+            return new GetItemsInAreaResponse(listOfItems.ToArray(), isMissingExpectedItems);
         }
 
         /// <summary>
@@ -225,10 +254,13 @@ namespace Gameplay
         /// <param name="distance">How long is the line?</param>
         /// <param name="ignoreOrigin">Should we ignore the origin itself?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInLine(Vector2Int origin, Vector2Int dir, int distance, bool ignoreOrigin = false)
+        public static GetItemsInAreaResponse GetItemsInLine(Vector2Int origin, Vector2Int dir, int distance,
+            bool ignoreOrigin = false)
         {
             //Items to return
             List<T> listOfItems = new();
+
+            bool isMissingExpectedItems = false;
 
             //Ensure direction is clamped correctly
             dir.Clamp(new Vector2Int(-1, -1), new Vector2Int(1, 1));
@@ -242,9 +274,13 @@ namespace Gameplay
                 {
                     listOfItems.Add(item);
                 }
+                else
+                {
+                    isMissingExpectedItems = true;
+                }
             }
 
-            return listOfItems.ToArray();
+            return new GetItemsInAreaResponse(listOfItems.ToArray(), isMissingExpectedItems);
         }
 
         /// <summary>
@@ -255,22 +291,30 @@ namespace Gameplay
         /// <param name="distance">How long is the line?</param>
         /// <param name="ignoreOrigin">Should we ignore the origin itself?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInLines(Vector2Int origin, Vector2Int[] dirs, int distance, bool ignoreOrigin = false)
+        public static GetItemsInAreaResponse GetItemsInLines(Vector2Int origin, Vector2Int[] dirs, int distance,
+            bool ignoreOrigin = false)
         {
             //Items to return
             List<T> listOfItems = new();
+            bool isMissingExpectedItems = false;
 
             //Add for all directions
             for (int i = 0; i < dirs.Length; i++)
             {
-                listOfItems.AddRange(GetItemsInLine(origin, dirs[i], distance, ignoreOrigin));
+                GetItemsInAreaResponse response = GetItemsInLine(origin, dirs[i], distance, ignoreOrigin);
+                if (response.isMissingExpectedItems)
+                {
+                    isMissingExpectedItems = true;
+                }
+
+                listOfItems.AddRange(response.foundItems);
             }
 
             //Remove any duplicates which can happen if lines cross
             listOfItems.RemoveDuplicates();
 
             //Return
-            return listOfItems.ToArray();
+            return new GetItemsInAreaResponse(listOfItems.ToArray(), isMissingExpectedItems);
         }
 
         /// <summary>
@@ -279,7 +323,7 @@ namespace Gameplay
         /// <param name="center">Coordinate of central item.</param>
         /// <param name="distance">How far from center can it move?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInCross(Vector2Int center, int distance)
+        public static GetItemsInAreaResponse GetItemsInCross(Vector2Int center, int distance)
         {
             //Items to return
             List<T> listOfItems = new();
@@ -294,13 +338,14 @@ namespace Gameplay
             if (item) listOfItems.Add(item);
 
             //Get all pieces in a line in X and Y dir
-            listOfItems.AddRange(GetItemsInLines(center, directions, distance + 1, true));
+            GetItemsInAreaResponse response = GetItemsInLines(center, directions, distance + 1, true);
+            listOfItems.AddRange(response.foundItems);
 
             //Remove any duplicates, can happen when comboing checks
             listOfItems.RemoveDuplicates();
 
             //Return
-            return listOfItems.ToArray();
+            return new GetItemsInAreaResponse(listOfItems.ToArray(), response.isMissingExpectedItems);
         }
 
         /// <summary>
@@ -309,7 +354,7 @@ namespace Gameplay
         /// <param name="center">Coordinate of central item.</param>
         /// <param name="distance">How far from center can it move?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInDiagonalCross(Vector2Int center, int distance)
+        public static GetItemsInAreaResponse GetItemsInDiagonalCross(Vector2Int center, int distance)
         {
             //Items to return
             List<T> listOfItems = new();
@@ -324,13 +369,14 @@ namespace Gameplay
             if (item) listOfItems.Add(item);
 
             //Get all pieces in a line in X and Y dir
-            listOfItems.AddRange(GetItemsInLines(center, directions, distance + 1, true));
+            GetItemsInAreaResponse response = GetItemsInLines(center, directions, distance + 1, true);
+            listOfItems.AddRange(response.foundItems);
 
             //Remove any duplicates, can happen when comboing checks
             listOfItems.RemoveDuplicates();
 
             //Return
-            return listOfItems.ToArray();
+            return new GetItemsInAreaResponse(listOfItems.ToArray(), response.isMissingExpectedItems);
         }
 
         /// <summary>
@@ -339,12 +385,21 @@ namespace Gameplay
         /// <param name="center">Coordinate of central item.</param>
         /// <param name="distance">How far from center can it move?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInStar(Vector2Int center, int distance)
+        public static GetItemsInAreaResponse GetItemsInStar(Vector2Int center, int distance)
         {
             List<T> returnList = new();
-            returnList.AddRange(GetItemsInCross(center, distance));
-            returnList.AddRange(GetItemsInDiagonalCross(center, distance));
-            return returnList.ToArray();
+
+            //Get items
+            GetItemsInAreaResponse responseCross = GetItemsInCross(center, distance);
+            GetItemsInAreaResponse responseDiagonalCross = GetItemsInDiagonalCross(center, distance);
+
+            //Write to our list
+            returnList.AddRange(responseCross.foundItems);
+            returnList.AddRange(responseDiagonalCross.foundItems);
+
+            //Return
+            return new GetItemsInAreaResponse(returnList.ToArray(),
+                responseDiagonalCross.isMissingExpectedItems && responseCross.isMissingExpectedItems);
         }
 
         /// <summary>
@@ -396,27 +451,47 @@ namespace Gameplay
         /// <param name="center">Coordinate of central item.</param>
         /// <param name="distance">Distance. This is inclusive, so distance > 1 will show results for 1 and the difference</param>
         /// <returns>Returns Array of T.</returns>
-        public static T[] GetItemsInLShapeCross(Vector2Int center, int distance)
+        public static GetItemsInAreaResponse GetItemsInLShapeCross(Vector2Int center, int distance)
         {
             List<T> listOfItems = new();
             Vector2Int topRight = new Vector2Int(1, 1);
             Vector2Int topLeft = new Vector2Int(-1, 1);
             Vector2Int bottomRight = new Vector2Int(1, -1);
             Vector2Int bottomLeft = new Vector2Int(-1, -1);
+
+            bool isMissingExpectedItems = false;
             for (int i = 0; i < distance; i++)
             {
                 int dist = i + 1;
-                listOfItems.Add(GetItemAtEndOfStandingLShape(center, topRight, dist));
-                listOfItems.Add(GetItemAtEndOfStandingLShape(center, topLeft, dist));
-                listOfItems.Add(GetItemAtEndOfStandingLShape(center, bottomRight, dist));
-                listOfItems.Add(GetItemAtEndOfStandingLShape(center, bottomLeft, dist));
-                listOfItems.Add(GetItemAtEndOfRestingLShape(center, topRight, dist));
-                listOfItems.Add(GetItemAtEndOfRestingLShape(center, topLeft, dist));
-                listOfItems.Add(GetItemAtEndOfRestingLShape(center, bottomRight, dist));
-                listOfItems.Add(GetItemAtEndOfRestingLShape(center, bottomLeft, dist));
+                T itemStdTR = GetItemAtEndOfStandingLShape(center, topRight, dist);
+                T itemStdTL = GetItemAtEndOfStandingLShape(center, topLeft, dist);
+                T itemStdBR = GetItemAtEndOfStandingLShape(center, bottomRight, dist);
+                T itemStdBL = GetItemAtEndOfStandingLShape(center, bottomLeft, dist);
+
+                T itemRestingTR = GetItemAtEndOfRestingLShape(center, topRight, dist);
+                T itemRestingTL = GetItemAtEndOfRestingLShape(center, topLeft, dist);
+                T itemRestingBR = GetItemAtEndOfRestingLShape(center, bottomRight, dist);
+                T itemRestingBL = GetItemAtEndOfRestingLShape(center, bottomLeft, dist);
+
+                //Iterate over all items, if any are null then set isMissingExpectedItems to true. Only return non-null
+                foreach (T item in new T[8]
+                         {
+                             itemStdTR, itemStdTL, itemStdBR, itemStdBL, itemRestingTR, itemRestingTL, itemRestingBR,
+                             itemRestingBL
+                         })
+                {
+                    if (item)
+                    {
+                        listOfItems.Add(item);
+                    }
+                    else
+                    {
+                        isMissingExpectedItems = true;
+                    }
+                }
             }
 
-            return listOfItems.ToArray();
+            return new GetItemsInAreaResponse(listOfItems.ToArray(), isMissingExpectedItems);
         }
 
         /// <summary>
