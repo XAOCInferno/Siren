@@ -149,7 +149,8 @@ namespace Gameplay.Piece
             //Our Data
             _pieceData = newPieceData;
 
-            //Set Scale
+            //Set Mesh
+            _pieceObject.GetView().SetMesh(_pieceData.GetMesh());
             _pieceObject.GetView().SetMeshScale(Vector3.one * _pieceData.GetBaseSize());
         }
 

@@ -14,7 +14,6 @@ namespace Gameplay.Piece
 {
     public class PieceView : MonoBehaviour, IStatedItem<EPieceLogicState>, IStatedItem<EPieceViewState>
     {
-        [SerializeField] private Mesh pieceMesh;
         [SerializeField] private GameObject pieceMeshObject;
 
         private MeshRenderer _meshRenderer;
@@ -32,11 +31,7 @@ namespace Gameplay.Piece
             _pieceObject = GetComponent<PieceObject>();
             Assert.NotNull(_pieceObject);
 
-            //All pieces must have a mesh
-            Assert.NotNull(pieceMesh);
-
-            //Set mesh
-            SetMesh(pieceMesh);
+            //Mesh
             _meshRenderer = pieceMeshObject.GetComponent<MeshRenderer>();
 
             //Subscribe to state machine
@@ -168,7 +163,7 @@ namespace Gameplay.Piece
             _pieceObject.GetTileScaleMkr().localScale = scale;
         }
 
-        protected void SetMesh(Mesh newMesh)
+        public void SetMesh(Mesh newMesh)
         {
             MeshFilter meshFilter = pieceMeshObject.GetComponent<MeshFilter>();
             Assert.IsNotNull(meshFilter);

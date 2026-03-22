@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35083fe60b70f5e4ab052f784ea15f44, type: 3}
   m_Name: TestPieceTroop
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.PieceData
+  mesh: {fileID: 9119384719540017626, guid: 385a674b2ef66974b99b96f8128e901f, type: 3}
   baseMovement: 2
   movementType: 3
   baseSize: 2
