@@ -22,14 +22,15 @@ namespace CustomCamera
             if (!playerCamera)
             {
                 DebugSystem.Error("Camera not present on main camera!");
+                return;
             }
+
+            CameraSubsystem.ChangeMainCamera(this);
         }
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private void Start()
         {
-            CameraSubsystem.ChangeMainCamera(this);
-
             //Move to the hand marker
             Transform handMkr = CameraSubsystem.GetCameraViewTransform(ECameraViewMode.Hand);
             if (!handMkr)
