@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Debug;
 using Gameplay.Piece;
 using Gameplay.Tile;
@@ -513,12 +514,11 @@ namespace Gameplay
 
         //TODO: Move into some kind of level data class that gets broadcasted on level begin (unless this is consistent size)
         //A tile is 1m, so a board of size 1,1 can fit a single tile
-        [SerializeField] protected int boardWidth;
-        [SerializeField] protected int boardHeight;
-
-        [SerializeField] protected float boardScale;
-
+        [SerializeField] protected int boardWidthHeight;
         [SerializeField] protected Transform mkrBoardStart;
+        [SerializeField] protected Transform mkrBoardEnd;
+
+        protected float tileScale;
 
         private void Awake()
         {
@@ -535,19 +535,21 @@ namespace Gameplay
         /// </summary>
         protected async void CreateBoardLayout()
         {
-            //Ensure prefab is valid
-            if (!tilePrefab)
-            {
-                DebugSystem.Error("Tile prefab undefined, cannot spawn new tiles on the board.");
-                return;
-            }
+            //Ensure required are valid
+            Assert.IsNotNull(tilePrefab);
+            Assert.IsNotNull(mkrBoardStart);
+            Assert.IsNotNull(mkrBoardEnd);
 
             //Create tiles array
-            BoardSystem<TileObject>.SetGridSize(boardWidth, boardHeight);
-            BoardSystem<PieceObject>.SetGridSize(boardWidth, boardHeight);
+            BoardSystem<TileObject>.SetGridSize(boardWidthHeight, boardWidthHeight);
+            BoardSystem<PieceObject>.SetGridSize(boardWidthHeight, boardWidthHeight);
+
+            //Get scale, assuming board is always square
+            float distance = Math.Abs(mkrBoardStart.position.x - mkrBoardEnd.position.x);
+            tileScale = distance / boardWidthHeight;
 
             //Iterate over and assign tiles to array
-            int numberOfTiles = boardWidth * boardHeight;
+            int numberOfTiles = boardWidthHeight * boardWidthHeight;
             int currentX = 0;
             int currentY = 0;
             for (int i = 0; i < numberOfTiles; i++)
@@ -556,12 +558,12 @@ namespace Gameplay
                 Vector2Int gridCoordinates = new Vector2Int(currentX, currentY);
 
                 //Spawn
-                GameObject tileObject = Instantiate(tilePrefab,
+                GameObject tileGameObject = Instantiate(tilePrefab,
                     GetTileLocalPositionOnGrid(gridCoordinates),
                     transform.rotation, transform);
 
                 //Get Tile comp and save it, ensuring it is not null
-                TileObject tile = tileObject.GetComponentInChildren<TileObject>();
+                TileObject tile = tileGameObject.GetComponentInChildren<TileObject>();
                 Assert.NotNull(tile);
                 await tile.Init();
                 tile.GetState().GetLogicStateMachine().SetState(ETileLogicState.Idle);
@@ -574,12 +576,11 @@ namespace Gameplay
                 BoardSystem<TileObject>.SetItemOnGrid(gridCoordinates, tile);
 
                 //Set scale
-                Transform tileTransform = tileObject.GetComponent<Transform>();
-                tileTransform.localScale = new Vector3(boardScale, boardScale, boardScale);
+                tileGameObject.transform.localScale = new Vector3(tileScale, tileScale, tileScale);
 
                 //Increment location for next tile, obeying grid layout
                 currentX++;
-                if (currentX == boardWidth)
+                if (currentX == boardWidthHeight)
                 {
                     currentX = 0;
                     currentY++;
@@ -595,9 +596,11 @@ namespace Gameplay
         protected Vector3 GetTileLocalPositionOnGrid(Vector2Int gridCoordinates)
         {
             Vector3 endPosition = mkrBoardStart ? mkrBoardStart.position : Vector3.zero;
-            Vector3 xOffset = transform.right * gridCoordinates.x;
-            Vector3 yOffset = transform.forward * gridCoordinates.y;
-            Vector3 offset = (xOffset + yOffset) * boardScale;
+            float halfScale = tileScale * 0.5f;
+            Vector3 scaleOffset = Vector3.one * halfScale;
+            Vector3 xOffset = -transform.right * gridCoordinates.x;
+            Vector3 yOffset = transform.forward + new Vector3(0, 0, 1) * gridCoordinates.y;
+            Vector3 offset = ((xOffset + yOffset) * tileScale) - scaleOffset;
             return endPosition + offset;
         }
 
@@ -646,7 +649,7 @@ namespace Gameplay
 
             //Set scale
             Transform pieceTransform = piecePooledItem.GetComponent<Transform>();
-            pieceTransform.localScale = new Vector3(boardScale, boardScale, boardScale);
+            pieceTransform.localScale = new Vector3(tileScale, tileScale, tileScale);
 
             //Parent & offset
             TileObject tileParent = BoardSystem<TileObject>.GetItemOnGrid(payload.gridCoordinates);
