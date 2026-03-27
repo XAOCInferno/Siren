@@ -254,14 +254,14 @@ namespace Gameplay.Tile
             //Update cached data
             _cachedMeshInstancingTransformDetails.location = _cachedDynamicTransform.position;
             _cachedMeshInstancingTransformDetails.rotation = _cachedDynamicTransform.rotation;
-            _cachedMeshInstancingTransformDetails.scale = GetVisualScale();
+            _cachedMeshInstancingTransformDetails.scale = GetVisualHalfScale();
 
             //Now update instancing
             _batchIdx = InstancedMeshRendererSingleton.instance.AddMeshInstancing(_batchIdx, _cachedInstanceID,
                 _cachedMeshMaterialPair, _cachedMeshInstancingTransformDetails);
         }
 
-        protected Vector3 GetVisualScale()
+        protected Vector3 GetVisualHalfScale()
         {
             return _cachedDynamicTransform.lossyScale / 2;
         }
