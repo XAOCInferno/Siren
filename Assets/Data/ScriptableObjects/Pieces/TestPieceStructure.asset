@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35083fe60b70f5e4ab052f784ea15f44, type: 3}
   m_Name: TestPieceStructure
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.PieceData
-  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  mesh: {fileID: -1542031950021933715, guid: b1d2a7e700f3b534bb84941ba224b639, type: 3}
   baseMovement: 0
   movementType: 0
-  baseSize: 1
+  baseSizeType: 1
   sizeShapeType: 1

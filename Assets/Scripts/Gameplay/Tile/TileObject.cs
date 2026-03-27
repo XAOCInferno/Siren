@@ -13,17 +13,14 @@ namespace Gameplay.Tile
     {
         [SerializeField] protected Transform pieceConnectionMkr;
 
-        protected DynamicObject dynamicObject;
-
-        public override void Awake()
-        {
-            base.Awake();
-            dynamicObject = GetComponent(typeof(DynamicObject)) as DynamicObject;
-            Assert.NotNull(dynamicObject);
-        }
+        [SerializeField] protected DynamicObject dynamicObject;
 
         public async Task Init()
         {
+            // Assert for required objects
+            Assert.NotNull(pieceConnectionMkr);
+            Assert.NotNull(dynamicObject);
+            
             try
             {
                 await GetLogic().Init();
@@ -35,7 +32,6 @@ namespace Gameplay.Tile
                 throw; // TODO handle exception
             }
         }
-
 
         public Transform GetPieceConnectionMkr() => pieceConnectionMkr;
 

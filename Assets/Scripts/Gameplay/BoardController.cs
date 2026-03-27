@@ -137,9 +137,6 @@ namespace Gameplay
                 origin += Vector2Int.up;
             }
 
-            //Remove duplicates
-            listOfItems.RemoveDuplicates();
-
             //Return our finished array
             return new GetItemsInAreaResponse(listOfItems.ToArray(), isMissingExpectedItems);
         }
@@ -311,9 +308,6 @@ namespace Gameplay
                 listOfItems.AddRange(response.foundItems);
             }
 
-            //Remove any duplicates which can happen if lines cross
-            listOfItems.RemoveDuplicates();
-
             //Return
             return new GetItemsInAreaResponse(listOfItems.ToArray(), isMissingExpectedItems);
         }
@@ -342,9 +336,6 @@ namespace Gameplay
             GetItemsInAreaResponse response = GetItemsInLines(center, directions, distance + 1, true);
             listOfItems.AddRange(response.foundItems);
 
-            //Remove any duplicates, can happen when comboing checks
-            listOfItems.RemoveDuplicates();
-
             //Return
             return new GetItemsInAreaResponse(listOfItems.ToArray(), response.isMissingExpectedItems);
         }
@@ -372,9 +363,6 @@ namespace Gameplay
             //Get all pieces in a line in X and Y dir
             GetItemsInAreaResponse response = GetItemsInLines(center, directions, distance + 1, true);
             listOfItems.AddRange(response.foundItems);
-
-            //Remove any duplicates, can happen when comboing checks
-            listOfItems.RemoveDuplicates();
 
             //Return
             return new GetItemsInAreaResponse(listOfItems.ToArray(), response.isMissingExpectedItems);
@@ -648,9 +636,9 @@ namespace Gameplay
             //Now everything has been validated, add it
 
             //Set scale
-            Transform pieceTransform = piecePooledItem.GetComponent<Transform>();
+            Transform pieceTransform = piecePooledItem.transform;
             pieceTransform.localScale = new Vector3(tileScale, tileScale, tileScale);
-
+            
             //Parent & offset
             TileObject tileParent = BoardSystem<TileObject>.GetItemOnGrid(payload.gridCoordinates);
             if (!tileParent)
@@ -660,20 +648,17 @@ namespace Gameplay
                     $"No Tile at position {payload.gridCoordinates.ToString()} to place piece on! This shouldn't happen.");
                 return;
             }
-
+            
             //Set occupied
-            tileParent.GetState().SetOccupier(piecePooledItem);
-
-            pieceTransform.parent = tileParent.GetComponent<Transform>();
-            pieceTransform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +
-                                           (connectionMkr.transform.localPosition * -1);
+            tileParent.GetState().SetOccupier(pieceObject);
 
             //Set State
+            PieceState pieceState = pieceObject.GetState();
             pieceObject.GetLogic().SetPieceData(payload.pieceData);
-            pieceObject.GetState().SetOwnerPlayer(payload.spawnedByPlayer);
+            pieceState.SetOwnerPlayer(payload.spawnedByPlayer);
             BoardSystem<PieceObject>.SetItemOnGrid(payload.gridCoordinates, pieceObject);
-            pieceObject.GetState().SetGridLocation(payload.gridCoordinates);
-            pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
+            pieceState.SetGridLocation(payload.gridCoordinates);
+            pieceState.GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
         }
     }
 }

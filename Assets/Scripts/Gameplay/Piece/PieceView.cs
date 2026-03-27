@@ -14,29 +14,40 @@ namespace Gameplay.Piece
 {
     public class PieceView : MonoBehaviour, IStatedItem<EPieceLogicState>, IStatedItem<EPieceViewState>
     {
-        [SerializeField] private GameObject pieceMeshObject;
-
-        private MeshRenderer _meshRenderer;
-
         private PieceState _state;
 
+        private Mesh _currentMesh;
+        private Material _currentMaterial;
         private readonly Dictionary<EPieceViewState, Material> _materialMap = new();
 
         protected List<TileObject> currentPreviewedTiles = new();
         private PieceObject _pieceObject;
+        private Vector3 _lastPosition = Vector3.zero;
+        private Transform _cachedDynamicTransform;
+
+        private InstancedMeshRendererSingleton.MeshInstancingTransformDetails _cachedMeshInstancingTransformDetails;
+        private KeyValuePair<Mesh, Material> _cachedMeshMaterialPair;
+
+        private int _batchIdx = -1;
 
         private void Awake()
         {
             //Get our object
             _pieceObject = GetComponent<PieceObject>();
             Assert.NotNull(_pieceObject);
-
-            //Mesh
-            _meshRenderer = pieceMeshObject.GetComponent<MeshRenderer>();
-            Assert.NotNull(_meshRenderer);
+            _cachedDynamicTransform = _pieceObject.GetTileScaleMkr().transform;
 
             //Subscribe to state machine
             SubscribeToStateChangedEvent();
+        }
+
+        private void Update()
+        {
+            // Update instancing if we move
+            // TODO: once we make this moveable then we can bind to that callback instead of in update
+            if (_cachedDynamicTransform.position == _lastPosition) return;
+            _lastPosition = _cachedDynamicTransform.position;
+            UpdateMeshInstancing();
         }
 
         private void OnDestroy()
@@ -83,10 +94,12 @@ namespace Gameplay.Piece
             switch (payload.newState)
             {
                 case EPieceLogicState.NotInPlay:
-                    pieceMeshObject.SetActive(false);
-                    break;
-                case EPieceLogicState.IdleOnBoard:
-                    pieceMeshObject.SetActive(true);
+                    if (_batchIdx > -1)
+                    {
+                        InstancedMeshRendererSingleton.instance.TryRemoveMeshInstancing(_batchIdx,
+                            gameObject.GetInstanceID());
+                    }
+
                     break;
             }
 
@@ -151,6 +164,9 @@ namespace Gameplay.Piece
                 _materialMap.Add(EPieceViewState.Idle, loadIdleMaterialTask.Result);
                 _materialMap.Add(EPieceViewState.Hovered, loadHoverMaterialTask.Result);
                 _materialMap.Add(EPieceViewState.Selected, loadSelectedMaterialTask.Result);
+
+                //Default material
+                SetMaterial(loadIdleMaterialTask.Result);
             }
             catch (Exception e)
             {
@@ -166,15 +182,16 @@ namespace Gameplay.Piece
 
         public void SetMesh(Mesh newMesh)
         {
-            //Get comps
-            MeshFilter meshFilter = pieceMeshObject.GetComponent<MeshFilter>();
-            Assert.IsNotNull(meshFilter);
-            MeshCollider meshCollider = pieceMeshObject.GetComponent<MeshCollider>();
-            Assert.IsNotNull(meshCollider);
+            _currentMesh = newMesh;
+            _cachedMeshMaterialPair = new KeyValuePair<Mesh, Material>(_currentMesh, _currentMaterial);
+            UpdateMeshInstancing();
+        }
 
-            //Set
-            meshFilter.mesh = newMesh;
-            meshCollider.sharedMesh = newMesh;
+        public void SetMaterial(Material newMat)
+        {
+            _currentMaterial = newMat;
+            _cachedMeshMaterialPair = new KeyValuePair<Mesh, Material>(_currentMesh, _currentMaterial);
+            UpdateMeshInstancing();
         }
 
         protected void ClearSelection()
@@ -191,8 +208,9 @@ namespace Gameplay.Piece
             //Clear previewed if we had any
             ClearAnyPreviewedTiles();
 
+            //Update material
             if (!_materialMap.TryGetValue(EPieceViewState.Hovered, out var mat)) return;
-            _meshRenderer.SetMaterials(new List<Material> { mat });
+            SetMaterial(mat);
         }
 
         public void SetSelected()
@@ -204,9 +222,9 @@ namespace Gameplay.Piece
             EPieceMovementType movementType = pieceData.GetMovementType();
             int movementSpeed = pieceData.GetBaseMovement();
 
-            //Select the piece
-            _pieceObject.GetState().GetLogicStateMachine().SetState(EPieceLogicState.SelectedOnBoard);
-            _pieceObject.GetState().GetViewStateMachine().SetState(EPieceViewState.Selected);
+            //Change to selected material
+            if (!_materialMap.TryGetValue(EPieceViewState.Selected, out var mat)) return;
+            SetMaterial(mat);
 
             //If piece cannot move, we can return early now
             if (movementType == EPieceMovementType.None || movementSpeed == 0) return;
@@ -263,10 +281,6 @@ namespace Gameplay.Piece
 
             //Save a copy so we can deactivate them later
             currentPreviewedTiles = tilesInMovementRange.ToList();
-
-            //Change to selected material
-            if (!_materialMap.TryGetValue(EPieceViewState.Selected, out var mat)) return;
-            _meshRenderer.SetMaterials(new List<Material> { mat });
         }
 
         protected void ClearAnyPreviewedTiles()
@@ -289,8 +303,24 @@ namespace Gameplay.Piece
             //Clear previewed if we had any
             ClearAnyPreviewedTiles();
 
+            //Update the material
             if (!_materialMap.TryGetValue(EPieceViewState.Idle, out var mat)) return;
-            _meshRenderer.SetMaterials(new List<Material> { mat });
+            SetMaterial(mat);
+        }
+
+        protected void UpdateMeshInstancing()
+        {
+            //Check we have required mesh and mat
+            if (!_currentMaterial || !_currentMesh) return;
+
+            //Update cached data
+            _cachedMeshInstancingTransformDetails.location = _cachedDynamicTransform.position;
+            _cachedMeshInstancingTransformDetails.rotation = _cachedDynamicTransform.rotation;
+            _cachedMeshInstancingTransformDetails.scale = _cachedDynamicTransform.lossyScale;
+
+            //Now update instancing
+            _batchIdx = InstancedMeshRendererSingleton.instance.AddMeshInstancing(_batchIdx,
+                gameObject.GetInstanceID(), _cachedMeshMaterialPair, _cachedMeshInstancingTransformDetails);
         }
     }
 }

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Gameplay.Card
 {
-    public class PlayingCardPreviewSingleton : DynamicObject
+    public class PlayingCardPreviewSingleton : MonoBehaviour
     {
         [SerializeField] private float moveDuration = 0.3f;
         [SerializeField] private float scale = 2;
@@ -16,6 +16,7 @@ namespace Gameplay.Card
 
         // Ending position when moving in
         [SerializeField] private Transform mkrMoveInToLocation;
+        private DynamicObject _dynamicObject;
 
         [SerializeField] protected GameObject graphicsParent;
         [SerializeField] protected CardViewModel viewModel;
@@ -35,7 +36,11 @@ namespace Gameplay.Card
             //Set instance
             instance = this;
 
+            // Cache
+            _dynamicObject = GetComponent<DynamicObject>();
+
             //Ensure all required are not null
+            Assert.NotNull(_dynamicObject);
             Assert.NotNull(viewModel);
             Assert.NotNull(graphicsParent);
             Assert.NotNull(mkrMoveInFromLocation);
@@ -55,7 +60,7 @@ namespace Gameplay.Card
 
             //Do move in animation
             transform.position = mkrMoveInFromLocation.position;
-            MoveTo(mkrMoveInToLocation.position, moveDuration);
+            _dynamicObject.MoveTo(mkrMoveInToLocation.position, moveDuration);
 
             //Finally show the preview
             graphicsParent.SetActive(true);
@@ -65,7 +70,7 @@ namespace Gameplay.Card
         {
             //Move out the card
             transform.position = mkrMoveInToLocation.position;
-            MoveTo(mkrMoveInFromLocation.position, moveDuration, type =>
+            _dynamicObject.MoveTo(mkrMoveInFromLocation.position, moveDuration, type =>
             {
                 //When moved out, deactivate it
                 graphicsParent.SetActive(false);

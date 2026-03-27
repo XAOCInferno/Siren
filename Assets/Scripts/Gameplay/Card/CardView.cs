@@ -2,16 +2,16 @@ using System;
 using System.Threading.Tasks;
 using Behaviours;
 using CustomCamera;
-using Debug;
 using Interaction;
 using JetBrains.Annotations;
+using NUnit.Framework;
 using UI;
 using UnityEngine;
 using Utils.StateMachine;
 
 namespace Gameplay.Card
 {
-    public class CardView : DynamicObject, IStatedItem<EInteractionState>
+    public class CardView : MonoBehaviour, IStatedItem<EInteractionState>
     {
         [SerializeField] protected CardViewModel cardViewModel;
 
@@ -25,15 +25,21 @@ namespace Gameplay.Card
         [SerializeField] protected float moveTimeHandToBoard = 0.3f;
         [SerializeField] protected float noContextMoveToTime = 0.2f;
 
-        private CardState _state;
+        private CardObject _object;
 
         protected Vector3 desiredPosition = Vector3.zero;
         protected Vector3 desiredOffset = Vector3.zero;
 
         private void Awake()
         {
+            // Cache
+            _object = GetComponent<CardObject>();
+            Assert.NotNull(_object);
+            
+            // Set Scale
             transform.localScale = Vector3.one * scale;
 
+            // Sub to state machine
             SubscribeToStateChangedEvent();
         }
 
@@ -50,19 +56,12 @@ namespace Gameplay.Card
 
         public void SubscribeToStateChangedEvent()
         {
-            _state = GetComponent<CardState>();
-            if (!_state)
-            {
-                DebugSystem.Error("CardState not found");
-                return;
-            }
-
-            _state.GetInteractionStateMachine().SubscribeToStateChangedCallback(this);
+            _object.GetState().GetInteractionStateMachine().SubscribeToStateChangedCallback(this);
         }
 
         public void UnSubscribeFromStateChangedEvent()
         {
-            _state.GetInteractionStateMachine().UnsubscribeToStateChangedCallback(this);
+            _object.GetState().GetInteractionStateMachine().UnsubscribeToStateChangedCallback(this);
         }
 
         public int OnStateChanged(EnumStateMachine<EInteractionState>.StateChangedEventPayload payload)
@@ -74,16 +73,17 @@ namespace Gameplay.Card
                     //Apply hovered offset
                     SetDesiredOffset(Vector3.up * yMoveOnHover, moveTimeDeckToHand);
                     cardViewModel.SetBorderVisibility(false);
-                    
+
                     //If we were previously selected then reset selected related logic
                     if (payload.oldState == EInteractionState.Selected)
                     {
                         //Clear preview
                         PlayingCardPreviewSingleton.instance.ClearFocusedCardData();
-                        
+
                         //Return to hand
                         CameraSubsystem.GetMainCamera().ChangeCameraViewMode(ECameraViewMode.Hand);
                     }
+
                     break;
                 case EInteractionState.Selected:
                     //Enable border
@@ -91,7 +91,7 @@ namespace Gameplay.Card
 
                     //Move camera to focus the board
                     CameraSubsystem.GetMainCamera().ChangeCameraViewMode(ECameraViewMode.Board);
-                    
+
                     //Set preview
                     PlayingCardPreviewSingleton.instance.SetFocusedCardData(cardViewModel.GetViewModelData());
                     break;
@@ -109,20 +109,20 @@ namespace Gameplay.Card
         public void SetDesiredPosition(Vector3 position, float moveTime)
         {
             desiredPosition = position;
-            MoveTo(desiredPosition + desiredOffset, moveTime);
+            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime);
         }
 
         public void SetDesiredPosition(Vector3 position, float moveTime,
             [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
             desiredPosition = position;
-            MoveTo(desiredPosition + desiredOffset, moveTime, callback);
+            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime, callback);
         }
 
         public void SetDesiredOffset(Vector3 offset, float moveTime)
         {
             desiredOffset = offset;
-            MoveTo(desiredPosition + desiredOffset, moveTime);
+            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime);
         }
 
 

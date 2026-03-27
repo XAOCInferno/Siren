@@ -4,27 +4,30 @@ using Debug;
 using Global;
 using Input;
 using JetBrains.Annotations;
+using NUnit.Framework;
 using UnityEngine;
 
 namespace CustomCamera
 {
-    public class PlayerCamera : DynamicObject
+    public class PlayerCamera : MonoBehaviour
     {
         [SerializeField] private float moveDuration = 0.35f;
 
         protected ECameraViewMode currentViewMode;
+        
+        private DynamicObject _dynamicObject;
 
         public Camera playerCamera { get; private set; }
 
         private void Awake()
         {
+            // Cache
             playerCamera = GetComponent<Camera>();
-            if (!playerCamera)
-            {
-                DebugSystem.Error("Camera not present on main camera!");
-                return;
-            }
+            _dynamicObject = GetComponent<DynamicObject>();
+            Assert.IsNotNull(playerCamera);
+            Assert.IsNotNull(_dynamicObject);
 
+            // Set main camera to this
             CameraSubsystem.ChangeMainCamera(this);
         }
 
@@ -62,8 +65,8 @@ namespace CustomCamera
             if (!moveMkr) return;
 
             //Now move
-            MoveTo(moveMkr.position, moveDuration);
-            RotateTo(moveMkr.rotation, moveDuration);
+            _dynamicObject.MoveTo(moveMkr.position, moveDuration);
+            _dynamicObject.RotateTo(moveMkr.rotation, moveDuration);
 
             //Now broadcast
             CameraEvents.InvokeOnCameraMoved(this, new CameraEvents.CameraMovedEventPayload(oldMode, newViewMode));

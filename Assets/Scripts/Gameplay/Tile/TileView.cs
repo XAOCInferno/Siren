@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Debug;
 using Gameplay.Card;
@@ -16,7 +15,6 @@ namespace Gameplay.Tile
     {
         [SerializeField] protected float yMoveOnHover = 0.5f;
         [SerializeField] protected float moveTime = 0.2f;
-        [SerializeField] private MeshRenderer[] meshRenderers;
 
         protected Vector3 startingPos = Vector3.zero;
 
@@ -24,8 +22,15 @@ namespace Gameplay.Tile
 
         protected TileObject tileObject;
 
+        private Transform _cachedDynamicTransform;
 
         private readonly Dictionary<ETileViewState, Material> _materialMap = new();
+
+        private InstancedMeshRendererSingleton.MeshInstancingTransformDetails _cachedMeshInstancingTransformDetails;
+        private KeyValuePair<Mesh, Material> _cachedMeshMaterialPair;
+        private int _cachedInstanceID;
+
+        private int _batchIdx = -1;
 
         private void Awake()
         {
@@ -36,6 +41,10 @@ namespace Gameplay.Tile
             //Get Start pos
             startingPos = transform.position;
 
+            //Caching
+            _cachedDynamicTransform = tileObject.GetMoveableObject().transform;
+            _cachedInstanceID = gameObject.GetInstanceID();
+
             //Now subscribe to our State Machine
             SubscribeToStateChangedEvent();
         }
@@ -43,6 +52,7 @@ namespace Gameplay.Tile
         private void OnDestroy()
         {
             UnSubscribeFromStateChangedEvent();
+            UnSubscribeFromCallbacks();
         }
 
         //~IStatedItem
@@ -52,6 +62,11 @@ namespace Gameplay.Tile
             {
                 //Addressables
                 await LoadAddressables();
+                tileObject.GetMoveableObject().BindToOnMovementCallback(gameObject, () =>
+                {
+                    UpdateMeshInstancing();
+                    return 0;
+                });
             }
             catch (Exception e)
             {
@@ -66,6 +81,11 @@ namespace Gameplay.Tile
         }
 
         public void UnSubscribeFromStateChangedEvent()
+        {
+            tileObject.GetMoveableObject().UnBindToOnMovementCallback(gameObject);
+        }
+
+        public void UnSubscribeFromCallbacks()
         {
             tileObject.GetState().GetViewStateMachine().UnsubscribeToStateChangedCallback(this);
         }
@@ -101,8 +121,8 @@ namespace Gameplay.Tile
                     }
                     else
                     {
-                        SetIdleMaterial();
                         MoveToActivePosition();
+                        SetIdleMaterial();
                     }
 
                     break;
@@ -136,6 +156,8 @@ namespace Gameplay.Tile
                     AddressablesSystem<Material>.GetOrLoadAddressable("M_TilePreviewAttack.mat");
                 var loadPreviewMoveMaterialTask =
                     AddressablesSystem<Material>.GetOrLoadAddressable("M_TilePreviewMove.mat");
+                var loadDefaultMesh =
+                    AddressablesSystem<Mesh>.GetOrLoadAddressable("DefaultTileBase.fbx");
 
                 //Results
                 await loadIdleMaterialTask;
@@ -144,17 +166,38 @@ namespace Gameplay.Tile
                 Assert.NotNull(loadPreviewAttackMaterialTask.Result);
                 await loadPreviewMoveMaterialTask;
                 Assert.NotNull(loadPreviewMoveMaterialTask.Result);
+                await loadDefaultMesh;
+                Assert.NotNull(loadDefaultMesh.Result);
 
                 //Set in data
                 _materialMap.Add(ETileViewState.Idle, loadIdleMaterialTask.Result);
                 _materialMap.Add(ETileViewState.PreviewMove, loadPreviewMoveMaterialTask.Result);
                 _materialMap.Add(ETileViewState.PreviewAttack, loadPreviewAttackMaterialTask.Result);
+
+                //Set mesh
+                SetMesh(loadDefaultMesh.Result);
             }
             catch (Exception e)
             {
                 DebugSystem.Error($"Failed to load addressables due to {e.Message}");
                 throw;
             }
+        }
+
+        public void SetMesh(Mesh newMesh)
+        {
+            // Update mesh if we are not already assigned it
+            if (_cachedMeshMaterialPair.Key == newMesh) return;
+            _cachedMeshMaterialPair = new KeyValuePair<Mesh, Material>(newMesh, _cachedMeshMaterialPair.Value);
+            UpdateMeshInstancing();
+        }
+
+        public void SetMaterial(Material newMat)
+        {
+            // Update material if we are not already assigned it
+            if (_cachedMeshMaterialPair.Value == newMat) return;
+            _cachedMeshMaterialPair = new KeyValuePair<Mesh, Material>(_cachedMeshMaterialPair.Key, newMat);
+            UpdateMeshInstancing();
         }
 
 
@@ -171,28 +214,19 @@ namespace Gameplay.Tile
         protected void SetIdleMaterial()
         {
             if (!_materialMap.TryGetValue(ETileViewState.Idle, out var mat)) return;
-            foreach (MeshRenderer meshRenderer in meshRenderers)
-            {
-                meshRenderer.SetMaterials(new List<Material> { mat });
-            }
+            SetMaterial(mat);
         }
 
         protected void SetPreviewAttackMaterial()
         {
             if (!_materialMap.TryGetValue(ETileViewState.PreviewAttack, out var mat)) return;
-            foreach (MeshRenderer meshRenderer in meshRenderers)
-            {
-                meshRenderer.SetMaterials(new List<Material> { mat });
-            }
+            SetMaterial(mat);
         }
 
         protected void SetPreviewMoveMaterial()
         {
             if (!_materialMap.TryGetValue(ETileViewState.PreviewMove, out var mat)) return;
-            foreach (MeshRenderer meshRenderer in meshRenderers)
-            {
-                meshRenderer.SetMaterials(new List<Material> { mat });
-            }
+            SetMaterial(mat);
         }
 
         protected void HandleCardPlayPreview(CardObject card)
@@ -209,6 +243,27 @@ namespace Gameplay.Tile
 
             PiecePreviewSingleton.instance.PreviewPieceOnTile(
                 card.GetLogic().GetCardData().GetAssociatedPieceData(), tileObject);
+        }
+
+
+        protected void UpdateMeshInstancing()
+        {
+            //Check we have required mesh and mat
+            if (!_cachedMeshMaterialPair.Key || !_cachedMeshMaterialPair.Value) return;
+
+            //Update cached data
+            _cachedMeshInstancingTransformDetails.location = _cachedDynamicTransform.position;
+            _cachedMeshInstancingTransformDetails.rotation = _cachedDynamicTransform.rotation;
+            _cachedMeshInstancingTransformDetails.scale = GetVisualScale();
+
+            //Now update instancing
+            _batchIdx = InstancedMeshRendererSingleton.instance.AddMeshInstancing(_batchIdx, _cachedInstanceID,
+                _cachedMeshMaterialPair, _cachedMeshInstancingTransformDetails);
+        }
+
+        protected Vector3 GetVisualScale()
+        {
+            return _cachedDynamicTransform.lossyScale / 2;
         }
     }
 }

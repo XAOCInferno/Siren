@@ -12,6 +12,8 @@ namespace Gameplay.Piece
 
         public static PiecePreviewSingleton instance { get; private set; }
 
+        private TileObject lastPreviewedOnTile;
+
         private void Awake()
         {
             //Ensure singleton is unique
@@ -39,11 +41,16 @@ namespace Gameplay.Piece
             {
                 meshFilter.mesh = data.GetMesh();
             }
-            
-            //Position
-            transform.parent = tile.GetComponent<Transform>();
-            transform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +
-                                      (connectionMkr.transform.localPosition * -1);
+
+            //Ensure we don't update if not necessary
+            if (tile != lastPreviewedOnTile)
+            {
+                //Position
+                lastPreviewedOnTile = tile;
+                transform.parent = tile.GetMoveableObject().transform;
+                transform.localPosition = tile.GetPieceConnectionMkr().transform.localPosition +
+                                          (connectionMkr.transform.localPosition * -1);
+            }
 
             //Scale
             transform.localScale = Vector3.one * data.GetMeshScale();

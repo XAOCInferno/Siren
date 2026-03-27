@@ -1,5 +1,4 @@
 using System;
-using Debug;
 
 namespace Utils.StateMachine
 {
@@ -37,9 +36,6 @@ namespace Utils.StateMachine
             //Save old state and set new state
             T oldState = _state;
             _state = newState;
-            
-            //Log
-            DebugSystem.Log($"State changed from {oldState} to {newState}");
             
             //Call callback to inform other systems who are subscribed
             onStateChangeCallback?.Invoke(new StateChangedEventPayload(oldState, newState));

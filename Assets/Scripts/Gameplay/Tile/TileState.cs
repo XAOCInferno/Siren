@@ -1,5 +1,6 @@
 using Gameplay.Piece;
 using JetBrains.Annotations;
+using NUnit.Framework;
 using UnityEngine;
 using Utils.StateMachine;
 
@@ -33,9 +34,26 @@ namespace Gameplay.Tile
         [CanBeNull] private PieceLogic _occupiedByPieceLogic = null;
         private Vector2Int _gridLocation;
 
-        public void SetOccupier(PieceLogic pieceLogic)
+        protected TileObject tileObject;
+
+        private void Awake()
         {
-            _occupiedByPieceLogic = pieceLogic;
+            tileObject = gameObject.GetComponent<TileObject>();
+            Assert.NotNull(tileObject);
+        }
+
+        public void SetOccupier(PieceObject pieceLogic)
+        {
+            // Cache the occupied by piece logic
+            _occupiedByPieceLogic = pieceLogic.GetLogic();
+
+            // Set position of tile so that the connection markers are touching
+            Transform pieceTransform = pieceLogic.transform;
+            pieceTransform.parent = tileObject.GetMoveableObject().transform;
+            pieceTransform.localPosition = tileObject.GetPieceConnectionMkr().transform.localPosition +
+                                           (pieceLogic.GetTileConnectionMkr().transform.localPosition * -1);
+
+            // Update state
             _logicStateMachine.SetState(ETileLogicState.OccupiedByPiece);
         }
 
