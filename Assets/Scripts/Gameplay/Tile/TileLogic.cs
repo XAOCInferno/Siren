@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Global;
 using NUnit.Framework;
 using Player;
 using UnityEngine;
@@ -80,8 +81,7 @@ namespace Gameplay.Tile
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            //Now play card
-            PlayCardToTile(true);
+            TileEvents.InvokeOnTileSelected(this, new TileEvents.OnTileSelectedPayload(tileObject));
         }
 
         public void OnPointerExit(PointerEventData eventData)
@@ -89,16 +89,6 @@ namespace Gameplay.Tile
             ETileViewState state = tileObject.GetState().GetViewStateMachine().GetState();
             if (state is ETileViewState.PreviewAttack or ETileViewState.PreviewMove) return;
             tileObject.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
-        }
-
-        protected ActionResult PlayCardToTile(bool playedByLocalPlayer)
-        {
-            //Ensure this is a valid play
-            if (tileObject.GetState().GetIsOccupiedByPiece())
-                return new ActionResult(false, "Cannot play card to tile as destination tile is occupied");
-
-            return GameplaySystem.PlayCard(tileObject.GetState().GetGridLocation(),
-                playedByLocalPlayer ? PlayerSystem.GetLocalPlayer() : PlayerSystem.GetAIPlayer());
         }
     }
 }

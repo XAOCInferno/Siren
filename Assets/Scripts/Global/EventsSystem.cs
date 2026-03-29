@@ -2,6 +2,7 @@ using System;
 using CustomCamera;
 using Gameplay.Card;
 using Gameplay.Piece;
+using Gameplay.Tile;
 using Input;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -216,6 +217,27 @@ namespace Global
         public static void InvokeOnCameraMoved([CanBeNull] object sender, CameraMovedEventPayload payload)
         {
             OnCameraMoved?.Invoke(sender, payload);
+        }
+    }
+    
+    public static class TileEvents
+    {
+        //Input Events
+        public class OnTileSelectedPayload : EventArgs
+        {
+            public readonly TileObject tileObject;
+
+            public OnTileSelectedPayload(TileObject tileObject)
+            {
+                this.tileObject = tileObject;
+            }
+        }
+
+        public static event EventHandler<OnTileSelectedPayload> OnTileSelected;
+
+        public static void InvokeOnTileSelected([CanBeNull] object sender, OnTileSelectedPayload payload)
+        {
+            OnTileSelected?.Invoke(sender, payload);
         }
     }
 }

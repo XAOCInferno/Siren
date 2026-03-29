@@ -40,6 +40,10 @@ namespace Gameplay
 
         public static CardObject GetCardBeingPlayed() => _cardBeingPlayed;
 
+        public static bool HasLocalCardBeingPlayed()
+        {
+            return _cardBeingPlayed;
+        }
         public static void SetLocalCardBeingPlayed(CardObject cardObject)
         {
             _cardBeingPlayed = cardObject;
@@ -49,7 +53,7 @@ namespace Gameplay
         {
             _cardBeingPlayed = null;
         }
-
+        
         public static ActionResult PlayCard(Vector2Int gridLocation, Player.Player playedBy)
         {
             //Make sure we have a card to play, otherwise return fail
