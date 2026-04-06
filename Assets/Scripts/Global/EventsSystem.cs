@@ -1,5 +1,6 @@
 using System;
 using CustomCamera;
+using Gameplay;
 using Gameplay.Card;
 using Gameplay.Piece;
 using Gameplay.Tile;
@@ -67,7 +68,8 @@ namespace Global
             public readonly Vector2Int toGridCoordinates;
             public readonly Vector2Int fromGridCoordinates;
 
-            public OrderMovePieceOnBoardPayload(PieceObject pieceObject, Vector2Int toGridCoordinates, Vector2Int fromGridCoordinates)
+            public OrderMovePieceOnBoardPayload(PieceObject pieceObject, Vector2Int toGridCoordinates,
+                Vector2Int fromGridCoordinates)
             {
                 this.pieceObject = pieceObject;
                 this.toGridCoordinates = toGridCoordinates;
@@ -261,6 +263,31 @@ namespace Global
         public static void InvokeOnTileSelected([CanBeNull] object sender, OnTileSelectedPayload payload)
         {
             OnTileSelected?.Invoke(sender, payload);
+        }
+    }
+
+    public static class GameplayEvents
+    {
+        //Broadcast gameplay phase changed. This is a result of the phase changing, not to change it. To change it, call the function in the GameplaySystem
+        public class GameplayPhaseStateChangedPayload : EventArgs
+        {
+            public readonly EGameplayPhaseState newGameplayPhaseState;
+            public readonly EGameplayPhaseState oldGameplayPhaseState;
+
+            public GameplayPhaseStateChangedPayload(EGameplayPhaseState newGameplayPhaseState,
+                EGameplayPhaseState oldGameplayPhaseState)
+            {
+                this.newGameplayPhaseState = newGameplayPhaseState;
+                this.oldGameplayPhaseState = oldGameplayPhaseState;
+            }
+        }
+
+        public static event EventHandler<GameplayPhaseStateChangedPayload> OnGameplayPhaseStateChanged;
+
+        public static void InvokeOnGameplayPhaseStateChanged([CanBeNull] object sender,
+            GameplayPhaseStateChangedPayload payload)
+        {
+            OnGameplayPhaseStateChanged?.Invoke(sender, payload);
         }
     }
 }

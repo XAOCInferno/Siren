@@ -12,6 +12,13 @@ using Utils;
 
 namespace Gameplay
 {
+    [Serializable]
+    public struct ValidGameplayTransitions
+    {
+        public EGameplayPhaseState fromState;
+        public EGameplayPhaseState[] validToStates;
+    }
+
     public class GameplayManagerSingleton : MonoBehaviour
     {
         //TODO: What is a reasonable size for these pools?
@@ -19,6 +26,9 @@ namespace Gameplay
         private const int PiecePoolSize = 256;
 
         public static GameplayManagerSingleton instance { get; private set; }
+
+        [SerializeField]
+        private ValidGameplayTransitions[] validGameplayTransitions = Array.Empty<ValidGameplayTransitions>();
 
         private void Awake()
         {
@@ -84,6 +94,9 @@ namespace Gameplay
 
                 //Communicate it's ready
                 PoolEvents.InvokeOnPoolSetup(this, new PoolEvents.PoolSetupPayload(typeof(PieceObject)));
+                
+                // Set initial gameplay phase state (TODO: We probably want to move this into some kind of TurnManager? Which could be a part of gameplay system)
+                GameplayEvents.InvokeOnGameplayPhaseStateChanged(this, new GameplayEvents.GameplayPhaseStateChangedPayload(EGameplayPhaseState.CardPhase, EGameplayPhaseState.CardPhase));
             }
             catch (Exception e)
             {
@@ -121,6 +134,20 @@ namespace Gameplay
                 return new Util.ActionResult(false, "Cannot handle piece movement as tile is occupied");
 
             return GameplaySystem.MovePiece(pieceObject, BoardSystem<TileObject>.GetItemLocationOnGrid(tileObject));
+        }
+
+        public ValidGameplayTransitions GetValidGameplayTransitions(EGameplayPhaseState fromState)
+        {
+            // Find next valid transitions
+            ValidGameplayTransitions validTransitions = new ValidGameplayTransitions();
+            for (int i = 0; i < validGameplayTransitions.Length; i++)
+            {
+                if (validGameplayTransitions[i].fromState != fromState) continue;
+                validTransitions = validGameplayTransitions[i];
+                break;
+            }
+
+            return validTransitions;
         }
     }
 }

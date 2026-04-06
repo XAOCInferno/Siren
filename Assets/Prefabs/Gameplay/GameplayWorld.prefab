@@ -319,6 +319,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9cb6da15d0236e42b7cffa6fdad73bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameplayManager
+  validGameplayTransitions:
+  - fromState: 0
+    validToStates: 01000000
+  - fromState: 1
+    validToStates: 02000000
+  - fromState: 2
+    validToStates: 00000000
 --- !u!1001 &1624362867007307907
 PrefabInstance:
   m_ObjectHideFlags: 0

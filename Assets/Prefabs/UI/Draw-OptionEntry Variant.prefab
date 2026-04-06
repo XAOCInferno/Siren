@@ -84,18 +84,6 @@ PrefabInstance:
       propertyPath: m_text
       value: Draw
       objectReference: {fileID: 0}
-    - target: {fileID: 5024562357551276931, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 140457113974642816}
-    - target: {fileID: 5024562357551276931, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnButtonPressed
-      objectReference: {fileID: 0}
-    - target: {fileID: 5024562357551276931, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: UI.Deck.DrawOptionButton, Assembly-CSharp
-      objectReference: {fileID: 0}
     - target: {fileID: 6396982323140560279, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
       propertyPath: m_text
       value: Draw
@@ -107,26 +95,5 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6623999933820920540, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 140457113974642816}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
---- !u!1 &3625989358196704472 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6623999933820920540, guid: 738a093588ea9bc4fbe3d3552e9a66d2, type: 3}
-  m_PrefabInstance: {fileID: 7619869309995722244}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &140457113974642816
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3625989358196704472}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23f31a9caec65fd4f81f84c332d9e1c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DrawOptionButton
-  cardTypeToDraw: 0
