@@ -53,10 +53,11 @@ namespace Gameplay.Card
             graphicsParent.SetActive(false);
         }
 
-        public void SetFocusedCardData(CardViewModelData data)
+        public void SetFocusedCardData(CardViewModelData data, ECardType cardType)
         {
             //Set our VM
             viewModel.SetViewModelData(data);
+            viewModel.SetType(cardType);
 
             //Do move in animation
             transform.position = mkrMoveInFromLocation.position;

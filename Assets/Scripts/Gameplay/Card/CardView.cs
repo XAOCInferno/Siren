@@ -35,7 +35,7 @@ namespace Gameplay.Card
             // Cache
             _object = GetComponent<CardObject>();
             Assert.NotNull(_object);
-            
+
             // Set Scale
             transform.localScale = Vector3.one * scale;
 
@@ -93,7 +93,8 @@ namespace Gameplay.Card
                     CameraSubsystem.GetMainCamera().ChangeCameraViewMode(ECameraViewMode.Board);
 
                     //Set preview
-                    PlayingCardPreviewSingleton.instance.SetFocusedCardData(cardViewModel.GetViewModelData());
+                    PlayingCardPreviewSingleton.instance.SetFocusedCardData(cardViewModel.GetViewModelData(),
+                        cardViewModel.GetType());
                     break;
             }
 
@@ -101,9 +102,10 @@ namespace Gameplay.Card
         }
         //~IStatedItem End
 
-        public void SetViewModelData(CardViewModelData data)
+        public void SetViewModelData(CardViewModelData data, ECardType cardType)
         {
             cardViewModel.SetViewModelData(data);
+            cardViewModel.SetType(cardType);
         }
 
         public void SetDesiredPosition(Vector3 position, float moveTime)

@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63022d2ee009621498f27395085223b8, type: 3}
   m_Name: TestStructure
   m_EditorClassIdentifier: Assembly-CSharp:Gameplay:CardData
-  cardID: 3
   type: 0
   associatedPieceData: {fileID: 11400000, guid: 77280382f9fdd8a49a302f33c495ea24, type: 2}
   viewData:

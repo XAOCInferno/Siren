@@ -150,7 +150,7 @@ namespace Gameplay.Card
             //Our Data
             _cardData = newCardData;
             //Set on VM
-            _cardObject.GetView().SetViewModelData(newCardData.GetViewData());
+            _cardObject.GetView().SetViewModelData(newCardData.GetViewData(), newCardData.GetCardType());
         }
 
         public CardData GetCardData() => _cardData;
@@ -250,13 +250,13 @@ namespace Gameplay.Card
             _cardObject.GetState().GetLogicStateMachine().SetState(ECardLogicState.SelectedInHand);
             InteractionSystem.SetSelected(this);
         }
-        
+
         //TODO: Block interaction when not in hand state
         protected void OnCameraMoved([CanBeNull] object sender, CameraEvents.CameraMovedEventPayload payload)
         {
             //If we move to anywhere except the board then return
             if (payload.newMode == ECameraViewMode.Board) return;
-            
+
             //We've moved away from board, so unselect this card
             EnumStateMachine<ECardLogicState> stateMachine = _cardObject.GetState().GetLogicStateMachine();
             if (stateMachine.GetState() == ECardLogicState.SelectedInHand)
