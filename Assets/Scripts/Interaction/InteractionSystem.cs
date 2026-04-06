@@ -40,7 +40,6 @@ namespace Interaction
             interactable.SetInteractable(isInteractable);
             if (!isInteractable)
             {
-                interactable.SetIdle();
                 if (interactable == _selected)
                 {
                     _selected = null;

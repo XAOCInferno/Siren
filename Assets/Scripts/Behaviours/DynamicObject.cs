@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Debug;
 using JetBrains.Annotations;
 using Unity.Burst;
 using UnityEngine;
 using UnityEngine.Jobs;
 using Unity.Collections;
-using Unity.Jobs;
 using Quaternion = UnityEngine.Quaternion;
 using Vector3 = UnityEngine.Vector3;
 
@@ -17,9 +17,13 @@ namespace Behaviours
         Completed,
     }
 
+    /// <summary>
+    /// Job to set position or local position of an object. Used with dynamic objects
+    /// </summary>
     [BurstCompile]
     public struct MoveDynamicObjectJob : IJobParallelForTransform
     {
+        [ReadOnly] public bool isWorldPosition;
         [ReadOnly] public Vector3 startPosition;
         [ReadOnly] public Vector3 endPosition;
         [ReadOnly] public float elapsedTime;
@@ -28,15 +32,26 @@ namespace Behaviours
 
         public void Execute(int index, TransformAccess transform)
         {
-            processing = false;
-            transform.position = Vector3.Lerp(startPosition, endPosition, elapsedTime / duration);
             processing = true;
+            float movePercent = duration == 0 ? 1 : elapsedTime / duration;
+            Vector3 location = Vector3.Lerp(startPosition, endPosition, movePercent);
+            if (isWorldPosition)
+            {
+                transform.position = location;
+            }
+            else
+            {
+                transform.localPosition = location;
+            }
+
+            processing = false;
         }
     }
 
     [BurstCompile]
     public struct RotateDynamicObjectJob : IJobParallelForTransform
     {
+        [ReadOnly] public bool isWorldRotation;
         [ReadOnly] public Quaternion startRotation;
         [ReadOnly] public Quaternion endRotation;
         [ReadOnly] public float elapsedTime;
@@ -45,9 +60,18 @@ namespace Behaviours
 
         public void Execute(int index, TransformAccess transform)
         {
-            Quaternion rotation = Quaternion.Lerp(startRotation, endRotation, elapsedTime / duration);
-            transform.rotation = new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
             processing = true;
+            Quaternion rotation = Quaternion.Lerp(startRotation, endRotation, elapsedTime / duration);
+            if (isWorldRotation)
+            {
+                transform.rotation = rotation;
+            }
+            else
+            {
+                transform.localRotation = rotation;
+            }
+
+            processing = false;
         }
     }
 
@@ -68,20 +92,24 @@ namespace Behaviours
 
         ///~State related
         private bool _doMove = false;
+
         private float _moveToDuration = 0;
         private float _elapsedMoveToTime = 0;
         private Vector3 _moveFrom = Vector3.zero;
         private Vector3 _moveTo = Vector3.zero;
+        private bool _moveIsWorldPosition = false;
 
         private bool _doRotate = false;
         private float _rotateToDuration = 0;
         private float _elapsedRotateToTime = 0;
         private Quaternion _rotateFrom = Quaternion.identity;
         private Quaternion _rotateTo = Quaternion.identity;
+
         ///~State related End
 
         // Our jobs
         private MoveDynamicObjectJob _lastMoveJob;
+
         private RotateDynamicObjectJob _lastRotateJob;
 
         // Bound callback functions. Key: bound to object, Value: List of bound functions
@@ -119,9 +147,13 @@ namespace Behaviours
         /// </summary>
         private void HandleMove()
         {
+            // Ensure positions are not equal
+            if (_moveTo == _moveFrom) return;
+
             // Begin the job
             _lastMoveJob = new MoveDynamicObjectJob()
             {
+                isWorldPosition = _moveIsWorldPosition,
                 startPosition = _moveFrom,
                 endPosition = _moveTo,
                 duration = _moveToDuration,
@@ -212,13 +244,13 @@ namespace Behaviours
         /// </summary>
         /// <param name="location">The world position the object should move to.</param>
         /// <param name="duration">How long the move should take in seconds.</param>
-        public void MoveTo(Vector3 location, float duration)
+        public void MoveTo(Vector3 location, float duration, bool isWorldPosition)
         {
             // End last move, if any
             CancelMove();
 
             // Begin new move
-            StartMove(location, duration);
+            StartMove(location, duration, isWorldPosition);
         }
 
         /// <summary>
@@ -227,10 +259,10 @@ namespace Behaviours
         /// <param name="location">The world position the object should move to.</param>
         /// <param name="duration">How long the move should take in seconds.</param>
         /// <param name="callback">The function we should call on completing the move.</param>
-        public void MoveTo(Vector3 location, float duration,
+        public void MoveTo(Vector3 location, float duration, bool isWorldPosition,
             [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
-            MoveTo(location, duration);
+            MoveTo(location, duration, isWorldPosition);
 
             //Callback
             moveCompleteCallback = callback;
@@ -241,9 +273,10 @@ namespace Behaviours
         /// </summary>
         /// <param name="location">The world position the object should move to.</param>
         /// <param name="duration">How long the move should take in seconds.</param>
-        private void StartMove(Vector3 location, float duration)
+        private void StartMove(Vector3 location, float duration, bool isWorldPosition)
         {
-            _moveFrom = transform.position;
+            _moveIsWorldPosition = isWorldPosition;
+            _moveFrom = isWorldPosition ? transform.position : transform.localPosition;
             _moveTo = location;
             _moveToDuration = duration;
             _elapsedMoveToTime = 0;

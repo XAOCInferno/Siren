@@ -80,7 +80,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gameplay.Tile.TileObject
   pieceConnectionMkr: {fileID: 135938491506614730}
-  dynamicObject: {fileID: 2193086342066697549}
+  dynamicObject: {fileID: 3407506373510823709}
 --- !u!114 &5159534283349838675
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 42946805177399314}
   - component: {fileID: 7204412218810026538}
   - component: {fileID: 2807242525037170376}
+  - component: {fileID: 3407506373510823709}
   m_Layer: 0
   m_Name: TileCollider
   m_TagString: Untagged
@@ -215,6 +216,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   tileObject: {fileID: 7070803676324236410}
+--- !u!114 &3407506373510823709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4047844342079418633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8edc710a291c46d438644ebc587e8752, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Behaviours.DynamicObject
 --- !u!1 &8668473112805514991
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,7 +237,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 85801662013127591}
-  - component: {fileID: 2193086342066697549}
   m_Layer: 0
   m_Name: RotationParent
   m_TagString: Untagged
@@ -248,15 +260,3 @@ Transform:
   - {fileID: 135938491506614730}
   m_Father: {fileID: 7180299493379412508}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
---- !u!114 &2193086342066697549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8668473112805514991}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8edc710a291c46d438644ebc587e8752, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Behaviours.DynamicObject

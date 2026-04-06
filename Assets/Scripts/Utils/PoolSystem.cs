@@ -170,10 +170,28 @@ namespace Utils
 
     public class PoolHelper : MonoBehaviour
     {
+        // Count to ensure objects do not have same name
+        private static readonly Dictionary<GameObject, int> InstantiatedObjectsCount = new();
+
         public static GameObject InstantiatePooledObject(GameObject template)
         {
+            // Instantiate
             GameObject newObject = Instantiate(template);
-            newObject.name = $"PooledObject-{template.name}";
+
+            // Get number of instantiated objects
+            if (InstantiatedObjectsCount.TryGetValue(template, out int currentCount))
+            {
+                InstantiatedObjectsCount[template]++;
+            }
+            else
+            {
+                InstantiatedObjectsCount.Add(template, 1);
+            }
+            
+            // Set object name
+            newObject.name = $"PooledObject-{template.name}-{currentCount.ToString()}";
+
+            // Return instantiated object
             return newObject;
         }
     }

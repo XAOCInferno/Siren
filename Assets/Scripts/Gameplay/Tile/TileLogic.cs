@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using Global;
 using NUnit.Framework;
-using Player;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils.StateMachine;

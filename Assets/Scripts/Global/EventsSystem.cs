@@ -59,6 +59,29 @@ namespace Global
         {
             OnOrderPlacePieceOnBoard?.Invoke(sender, payload);
         }
+
+        //Move a piece
+        public class OrderMovePieceOnBoardPayload : EventArgs
+        {
+            public readonly PieceObject pieceObject;
+            public readonly Vector2Int toGridCoordinates;
+            public readonly Vector2Int fromGridCoordinates;
+
+            public OrderMovePieceOnBoardPayload(PieceObject pieceObject, Vector2Int toGridCoordinates, Vector2Int fromGridCoordinates)
+            {
+                this.pieceObject = pieceObject;
+                this.toGridCoordinates = toGridCoordinates;
+                this.fromGridCoordinates = fromGridCoordinates;
+            }
+        }
+
+        public static event EventHandler<OrderMovePieceOnBoardPayload> OnOrderMovePieceOnBoard;
+
+        public static void InvokeOnOrderMovePieceOnBoard([CanBeNull] object sender,
+            OrderMovePieceOnBoardPayload payload)
+        {
+            OnOrderMovePieceOnBoard?.Invoke(sender, payload);
+        }
     }
 
     public static class PoolEvents
@@ -219,7 +242,7 @@ namespace Global
             OnCameraMoved?.Invoke(sender, payload);
         }
     }
-    
+
     public static class TileEvents
     {
         //Input Events

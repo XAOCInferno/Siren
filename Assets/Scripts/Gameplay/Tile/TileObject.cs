@@ -9,18 +9,24 @@ using Utils;
 
 namespace Gameplay.Tile
 {
-    public class TileObject : StateViewLogicObject<TileState, TileLogic, TileView>
+    public class TileObject : StateViewLogicObject<TileState, TileLogic, TileView>, IBoardObject
     {
         [SerializeField] protected Transform pieceConnectionMkr;
 
         [SerializeField] protected DynamicObject dynamicObject;
+
+        //~IBoardObject
+        public void OnGridLocationSet()
+        {
+        }
+        //~IBoardObject End
 
         public async Task Init()
         {
             // Assert for required objects
             Assert.NotNull(pieceConnectionMkr);
             Assert.NotNull(dynamicObject);
-            
+
             try
             {
                 await GetLogic().Init();

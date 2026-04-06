@@ -65,7 +65,7 @@ namespace CustomCamera
             if (!moveMkr) return;
 
             //Now move
-            _dynamicObject.MoveTo(moveMkr.position, moveDuration);
+            _dynamicObject.MoveTo(moveMkr.position, moveDuration, true);
             _dynamicObject.RotateTo(moveMkr.rotation, moveDuration);
 
             //Now broadcast

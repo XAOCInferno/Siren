@@ -94,9 +94,13 @@ namespace Gameplay
 
         protected static void OnTileSelected(object sender, TileEvents.OnTileSelectedPayload payload)
         {
-            if (GameplaySystem.HasLocalCardBeingPlayed())
+            if (GameplaySystem.HasCardBeingPlayed())
             {
                 PlayCardToTile(payload.tileObject, true);
+            }
+            else if (GameplaySystem.HasPieceBeingControlled())
+            {
+                HandlePieceToTileAction(GameplaySystem.GetPieceBeingControlled(), payload.tileObject);
             }
         }
 
@@ -106,8 +110,17 @@ namespace Gameplay
             if (tileObject.GetState().GetIsOccupiedByPiece())
                 return new ActionResult(false, "Cannot play card to tile as destination tile is occupied");
 
-            return GameplaySystem.PlayCard(tileObject.GetState().GetGridLocation(),
+            return GameplaySystem.PlayCard(BoardSystem<TileObject>.GetItemLocationOnGrid(tileObject),
                 playedByLocalPlayer ? PlayerSystem.GetLocalPlayer() : PlayerSystem.GetAIPlayer());
+        }
+
+        protected static ActionResult HandlePieceToTileAction(PieceObject pieceObject, TileObject tileObject)
+        {
+            //Ensure this is a valid play
+            if (tileObject.GetState().GetIsOccupiedByPiece())
+                return new ActionResult(false, "Cannot handle piece movement as tile is occupied");
+
+            return GameplaySystem.MovePiece(pieceObject, BoardSystem<TileObject>.GetItemLocationOnGrid(tileObject));
         }
     }
 }

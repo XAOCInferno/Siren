@@ -21,16 +21,16 @@ namespace Gameplay
     /// System handling a grid with items on it.
     /// T: Represents which layer we are occupying. EG: Tile layer, Piece layer. Items on different layers will not block each other and will need further checks if this is required. 
     /// </summary>
-    public static class BoardSystem<T> where T : UnityEngine.Object
+    public static class BoardSystem<T> where T : UnityEngine.Object, IBoardObject
     {
         public struct GetItemsInAreaResponse
         {
-            public T[] foundItems;
+            public readonly KeyValuePair<T, Vector2Int>[] foundItems;
 
-            public bool
-                isMissingExpectedItems; //Any items we were expecing are missing? eg if the grid locations were outside the grid
+            //Any items we were expecting are missing? eg if the grid locations were outside the grid
+            public readonly bool isMissingExpectedItems;
 
-            public GetItemsInAreaResponse(T[] foundItems, bool isMissingExpectedItems)
+            public GetItemsInAreaResponse(KeyValuePair<T, Vector2Int>[] foundItems, bool isMissingExpectedItems)
             {
                 this.foundItems = foundItems;
                 this.isMissingExpectedItems = isMissingExpectedItems;
@@ -38,6 +38,7 @@ namespace Gameplay
         }
 
         private static T[,] _items = new T[0, 0];
+        private static Dictionary<T, Vector2Int> _itemLocationMap = new Dictionary<T, Vector2Int>();
 
         /// <summary>
         /// Sets the size of the grid
@@ -61,20 +62,22 @@ namespace Gameplay
         /// </summary>
         /// <param name="gridCoordinates">Coordinate of the item.</param>
         /// <returns>Returns T or Null.</returns>
-        [CanBeNull]
-        public static T GetItemOnGrid(Vector2Int gridCoordinates)
+#nullable enable
+        public static KeyValuePair<T?, Vector2Int> GetItemOnGrid(Vector2Int gridCoordinates)
         {
             //Check we have valid array index
             if (gridCoordinates.x >= 0 && gridCoordinates.x < _items.GetLength(0)
                                        && gridCoordinates.y >= 0 && gridCoordinates.y < _items.GetLength(1))
             {
                 //Valid index, return T or Null depending on if we have anything here
-                return _items[gridCoordinates.x, gridCoordinates.y];
+                Vector2Int location = new Vector2Int(gridCoordinates.x, gridCoordinates.y);
+                return new KeyValuePair<T?, Vector2Int>(_items[gridCoordinates.x, gridCoordinates.y], location);
             }
 
             //Invalid index, return null
-            return null;
+            return new KeyValuePair<T?, Vector2Int>(null, new Vector2Int(-1, -1));
         }
+#nullable disable
 
         /// <summary>
         /// Gets the item at an offset position
@@ -84,12 +87,13 @@ namespace Gameplay
         /// <param name="distanceX">How far to offset in X direction</param>
         /// <param name="distanceY">How far to offset in Y direction</param>
         /// <returns>Returns T or Null.</returns>
-        public static T GetItemAtOffset(Vector2Int origin, Vector2Int dir, int distanceX, int distanceY)
+        public static KeyValuePair<T, Vector2Int> GetItemAtOffset(Vector2Int origin, Vector2Int dir, int distanceX,
+            int distanceY)
         {
             int xOffset = distanceX * dir.x;
             int yOffset = distanceY * dir.y;
-
-            return GetItemOnGrid(new Vector2Int(origin.x + xOffset, origin.y + yOffset));
+            Vector2Int location = new Vector2Int(origin.x + xOffset, origin.y + yOffset);
+            return GetItemOnGrid(location);
         }
 
         /// <summary>
@@ -119,7 +123,7 @@ namespace Gameplay
             Assert.Greater(width, 0);
 
             //Items we will return
-            List<T> listOfItems = new();
+            List<KeyValuePair<T, Vector2Int>> listOfItems = new();
             Vector2Int origin = center - new Vector2Int(0, height); //Start at top
             Vector2Int xDir = Vector2Int.right;
             Vector2Int[] directions = { xDir, xDir * -1 };
@@ -150,7 +154,7 @@ namespace Gameplay
         public static GetItemsInAreaResponse GetItemsInCircle(Vector2Int center, int radius)
         {
             //Items to return
-            List<T> listOfItems = new();
+            List<KeyValuePair<T, Vector2Int>> listOfItems = new();
 
             bool isMissingExpectedItems = false;
 
@@ -168,10 +172,11 @@ namespace Gameplay
                 for (int x = left; x <= right; x++)
                 {
                     //Get our item, add it to data if valid
-                    T item = GetItemOnGrid(new Vector2Int(x, y));
-                    if (item)
+                    Vector2Int location = new Vector2Int(x, y);
+                    KeyValuePair<T, Vector2Int> item = GetItemOnGrid(location);
+                    if (item.Key)
                     {
-                        listOfItems.Add(item);
+                        listOfItems.Add(new KeyValuePair<T, Vector2Int>(item.Key, location));
                     }
                     else
                     {
@@ -195,7 +200,7 @@ namespace Gameplay
             float curveAngle)
         {
             //Return list
-            List<T> listOfItems = new();
+            List<KeyValuePair<T, Vector2Int>> listOfItems = new();
 
             bool isMissingExpectedItems = false;
 
@@ -227,10 +232,11 @@ namespace Gameplay
                     //If angle is valid add the item to our output list
                     if (dot >= curveAngle)
                     {
-                        T item = GetItemOnGrid(new Vector2Int(x, y));
-                        if (item)
+                        Vector2Int location = new Vector2Int(x, y);
+                        KeyValuePair<T, Vector2Int> item = GetItemOnGrid(location);
+                        if (item.Key)
                         {
-                            listOfItems.Add(item);
+                            listOfItems.Add(new KeyValuePair<T, Vector2Int>(item.Key, location));
                         }
                         else
                         {
@@ -256,7 +262,7 @@ namespace Gameplay
             bool ignoreOrigin = false)
         {
             //Items to return
-            List<T> listOfItems = new();
+            List<KeyValuePair<T, Vector2Int>> listOfItems = new();
 
             bool isMissingExpectedItems = false;
 
@@ -267,10 +273,11 @@ namespace Gameplay
             //Calculate all items in circle
             for (int i = ignoreOrigin ? 1 : 0; i < distance; i++)
             {
-                T item = GetItemOnGrid(origin + (dir * i));
-                if (item)
+                Vector2Int location = origin + (dir * i);
+                KeyValuePair<T, Vector2Int> item = GetItemOnGrid(location);
+                if (item.Key)
                 {
-                    listOfItems.Add(item);
+                    listOfItems.Add(new KeyValuePair<T, Vector2Int>(item.Key, location));
                 }
                 else
                 {
@@ -293,7 +300,7 @@ namespace Gameplay
             bool ignoreOrigin = false)
         {
             //Items to return
-            List<T> listOfItems = new();
+            List<KeyValuePair<T, Vector2Int>> listOfItems = new();
             bool isMissingExpectedItems = false;
 
             //Add for all directions
@@ -321,7 +328,7 @@ namespace Gameplay
         public static GetItemsInAreaResponse GetItemsInCross(Vector2Int center, int distance)
         {
             //Items to return
-            List<T> listOfItems = new();
+            List<KeyValuePair<T, Vector2Int>> listOfItems = new();
 
             //XY Directions
             Vector2Int xDir = Vector2Int.right;
@@ -329,8 +336,8 @@ namespace Gameplay
             Vector2Int[] directions = { xDir, yDir, xDir * -1, yDir * -1 };
 
             //Get origin point
-            T item = GetItemOnGrid(center);
-            if (item) listOfItems.Add(item);
+            KeyValuePair<T, Vector2Int> item = GetItemOnGrid(center);
+            if (item.Key) listOfItems.Add(new KeyValuePair<T, Vector2Int>(item.Key, center));
 
             //Get all pieces in a line in X and Y dir
             GetItemsInAreaResponse response = GetItemsInLines(center, directions, distance + 1, true);
@@ -349,7 +356,7 @@ namespace Gameplay
         public static GetItemsInAreaResponse GetItemsInDiagonalCross(Vector2Int center, int distance)
         {
             //Items to return
-            List<T> listOfItems = new();
+            List<KeyValuePair<T, Vector2Int>> listOfItems = new();
 
             //XY Directions
             Vector2Int xDir = new Vector2Int(1, 1);
@@ -357,8 +364,8 @@ namespace Gameplay
             Vector2Int[] directions = { xDir, yDir, xDir * -1, yDir * -1 };
 
             //Get origin point
-            T item = GetItemOnGrid(center);
-            if (item) listOfItems.Add(item);
+            KeyValuePair<T, Vector2Int> item = GetItemOnGrid(center);
+            if (item.Key) listOfItems.Add(new KeyValuePair<T, Vector2Int>(item.Key, center));
 
             //Get all pieces in a line in X and Y dir
             GetItemsInAreaResponse response = GetItemsInLines(center, directions, distance + 1, true);
@@ -376,7 +383,7 @@ namespace Gameplay
         /// <returns>Returns Array of T.</returns>
         public static GetItemsInAreaResponse GetItemsInStar(Vector2Int center, int distance)
         {
-            List<T> returnList = new();
+            List<KeyValuePair<T, Vector2Int>> returnList = new();
 
             //Get items
             GetItemsInAreaResponse responseCross = GetItemsInCross(center, distance);
@@ -398,7 +405,8 @@ namespace Gameplay
         /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
         /// <param name="distance">How far from center can it move?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T GetItemAtEndOfStandingLShape(Vector2Int origin, Vector2Int dir, int distance)
+        public static KeyValuePair<T, Vector2Int> GetItemAtEndOfStandingLShape(Vector2Int origin, Vector2Int dir,
+            int distance)
         {
             return GetItemAtEndOfLShape(origin, dir, distance, false);
         }
@@ -410,7 +418,8 @@ namespace Gameplay
         /// <param name="dir">Direction of the L, note this needs to be not zero.</param>
         /// <param name="distance">How far from center can it move?</param>
         /// <returns>Returns Array of T.</returns>
-        public static T GetItemAtEndOfRestingLShape(Vector2Int origin, Vector2Int dir, int distance)
+        public static KeyValuePair<T, Vector2Int> GetItemAtEndOfRestingLShape(Vector2Int origin, Vector2Int dir,
+            int distance)
         {
             return GetItemAtEndOfLShape(origin, dir, distance, true);
         }
@@ -423,7 +432,8 @@ namespace Gameplay
         /// <param name="distance">How far from center can it move?</param>
         /// <param name="isResting">Is the L on its side (rotated 90 degrees)</param>
         /// <returns>Returns Array of T.</returns>
-        public static T GetItemAtEndOfLShape(Vector2Int origin, Vector2Int dir, int distance, bool isResting)
+        public static KeyValuePair<T, Vector2Int> GetItemAtEndOfLShape(Vector2Int origin, Vector2Int dir, int distance,
+            bool isResting)
         {
             dir.Clamp(new Vector2Int(-1, -1), new Vector2Int(1, 1));
             Assert.NotZero(dir.x);
@@ -442,7 +452,7 @@ namespace Gameplay
         /// <returns>Returns Array of T.</returns>
         public static GetItemsInAreaResponse GetItemsInLShapeCross(Vector2Int center, int distance)
         {
-            List<T> listOfItems = new();
+            List<KeyValuePair<T, Vector2Int>> listOfItems = new();
             Vector2Int topRight = new Vector2Int(1, 1);
             Vector2Int topLeft = new Vector2Int(-1, 1);
             Vector2Int bottomRight = new Vector2Int(1, -1);
@@ -452,24 +462,24 @@ namespace Gameplay
             for (int i = 0; i < distance; i++)
             {
                 int dist = i + 1;
-                T itemStdTR = GetItemAtEndOfStandingLShape(center, topRight, dist);
-                T itemStdTL = GetItemAtEndOfStandingLShape(center, topLeft, dist);
-                T itemStdBR = GetItemAtEndOfStandingLShape(center, bottomRight, dist);
-                T itemStdBL = GetItemAtEndOfStandingLShape(center, bottomLeft, dist);
+                KeyValuePair<T, Vector2Int> itemStdTR = GetItemAtEndOfStandingLShape(center, topRight, dist);
+                KeyValuePair<T, Vector2Int> itemStdTL = GetItemAtEndOfStandingLShape(center, topLeft, dist);
+                KeyValuePair<T, Vector2Int> itemStdBR = GetItemAtEndOfStandingLShape(center, bottomRight, dist);
+                KeyValuePair<T, Vector2Int> itemStdBL = GetItemAtEndOfStandingLShape(center, bottomLeft, dist);
 
-                T itemRestingTR = GetItemAtEndOfRestingLShape(center, topRight, dist);
-                T itemRestingTL = GetItemAtEndOfRestingLShape(center, topLeft, dist);
-                T itemRestingBR = GetItemAtEndOfRestingLShape(center, bottomRight, dist);
-                T itemRestingBL = GetItemAtEndOfRestingLShape(center, bottomLeft, dist);
+                KeyValuePair<T, Vector2Int> itemRestingTR = GetItemAtEndOfRestingLShape(center, topRight, dist);
+                KeyValuePair<T, Vector2Int> itemRestingTL = GetItemAtEndOfRestingLShape(center, topLeft, dist);
+                KeyValuePair<T, Vector2Int> itemRestingBR = GetItemAtEndOfRestingLShape(center, bottomRight, dist);
+                KeyValuePair<T, Vector2Int> itemRestingBL = GetItemAtEndOfRestingLShape(center, bottomLeft, dist);
 
                 //Iterate over all items, if any are null then set isMissingExpectedItems to true. Only return non-null
-                foreach (T item in new T[8]
+                foreach (KeyValuePair<T, Vector2Int> item in new KeyValuePair<T, Vector2Int>[8]
                          {
                              itemStdTR, itemStdTL, itemStdBR, itemStdBL, itemRestingTR, itemRestingTL, itemRestingBR,
                              itemRestingBL
                          })
                 {
-                    if (item)
+                    if (item.Key)
                     {
                         listOfItems.Add(item);
                     }
@@ -493,6 +503,38 @@ namespace Gameplay
             //Ensure we are not overwriting a item, that is not supported. If we want to replace a item, functionality should be added for that
             Assert.IsNull(_items[gridCoordinates.x, gridCoordinates.y]);
             _items[gridCoordinates.x, gridCoordinates.y] = item;
+
+            // Assign the item location for quick queries
+            if (!_itemLocationMap.ContainsKey(item))
+            {
+                _itemLocationMap.Add(item, gridCoordinates);
+            }
+            else
+            {
+                _itemLocationMap[item] = gridCoordinates;
+            }
+
+            //Inform item
+            item.OnGridLocationSet();
+        }
+
+        /// <summary>
+        /// Removes the item on the grid.
+        /// </summary>
+        /// <param name="gridCoordinates">Where to remove it from.</param>
+        public static void RemoveItemFromGrid(Vector2Int gridCoordinates)
+        {
+            _items[gridCoordinates.x, gridCoordinates.y] = null;
+        }
+
+        /// <summary>
+        /// Returns the location of the item on the grid.
+        /// </summary>
+        /// <param name="item">Item we're searching for.</param>
+        public static Vector2Int GetItemLocationOnGrid(T item)
+        {
+            _itemLocationMap.TryGetValue(item, out var gridCoordinates);
+            return gridCoordinates;
         }
     }
 
@@ -511,6 +553,7 @@ namespace Gameplay
         private void Awake()
         {
             BoardEvents.OnOrderPlacePieceOnBoard += OnOrderPlacePieceOnBoard;
+            BoardEvents.OnOrderMovePieceOnBoard += OnOrderMovePieceOnBoard;
         }
 
         private void Start()
@@ -549,7 +592,7 @@ namespace Gameplay
                 GameObject tileGameObject = Instantiate(tilePrefab,
                     GetTileLocalPositionOnGrid(gridCoordinates),
                     transform.rotation, transform);
-
+                tileGameObject.name = $"{tileGameObject.name}-{i.ToString()}";
                 //Get Tile comp and save it, ensuring it is not null
                 TileObject tile = tileGameObject.GetComponentInChildren<TileObject>();
                 Assert.NotNull(tile);
@@ -557,14 +600,11 @@ namespace Gameplay
                 tile.GetState().GetLogicStateMachine().SetState(ETileLogicState.Idle);
                 tile.GetState().GetViewStateMachine().SetState(ETileViewState.Idle);
 
-                //Set grid location on tile
-                tile.GetState().SetGridLocation(new Vector2Int(currentX, currentY));
-
                 //Add to data
                 BoardSystem<TileObject>.SetItemOnGrid(gridCoordinates, tile);
 
                 //Set scale
-                tileGameObject.transform.localScale = new Vector3(tileScale, tileScale, tileScale);
+                tile.GetView().SetScale(new Vector3(tileScale, tileScale, tileScale));
 
                 //Increment location for next tile, obeying grid layout
                 currentX++;
@@ -595,7 +635,7 @@ namespace Gameplay
         protected void OnOrderPlacePieceOnBoard(object sender, BoardEvents.OrderPlacePieceOnBoardPayload payload)
         {
             //Get tile we wish to place on
-            TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(payload.gridCoordinates);
+            TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(payload.gridCoordinates).Key;
 
             //Check tile is present
             if (!tile)
@@ -606,7 +646,7 @@ namespace Gameplay
             }
 
             //Check location is free
-            if (BoardSystem<PieceObject>.GetItemOnGrid(payload.gridCoordinates))
+            if (BoardSystem<PieceObject>.GetItemOnGrid(payload.gridCoordinates).Key)
             {
                 DebugSystem.Error(
                     $"Cannot place piece on location {payload.gridCoordinates.ToString()} as this location is already occupied");
@@ -640,7 +680,7 @@ namespace Gameplay
             pieceTransform.localScale = new Vector3(tileScale, tileScale, tileScale);
             
             //Parent & offset
-            TileObject tileParent = BoardSystem<TileObject>.GetItemOnGrid(payload.gridCoordinates);
+            TileObject tileParent = BoardSystem<TileObject>.GetItemOnGrid(payload.gridCoordinates).Key;
             if (!tileParent)
             {
                 //Err: missing tile
@@ -648,6 +688,9 @@ namespace Gameplay
                     $"No Tile at position {payload.gridCoordinates.ToString()} to place piece on! This shouldn't happen.");
                 return;
             }
+
+            //Set position so that object is below the tile TODO: This may want to be shorter / longer based on piece model height
+            pieceTransform.position = tileParent.transform.position + Vector3.down * payload.pieceData.GetBaseSize();
             
             //Set occupied
             tileParent.GetState().SetOccupier(pieceObject);
@@ -656,9 +699,36 @@ namespace Gameplay
             PieceState pieceState = pieceObject.GetState();
             pieceObject.GetLogic().SetPieceData(payload.pieceData);
             pieceState.SetOwnerPlayer(payload.spawnedByPlayer);
-            BoardSystem<PieceObject>.SetItemOnGrid(payload.gridCoordinates, pieceObject);
-            pieceState.SetGridLocation(payload.gridCoordinates);
             pieceState.GetLogicStateMachine().SetState(EPieceLogicState.IdleOnBoard);
+
+            // Set piece on grid
+            BoardSystem<PieceObject>.SetItemOnGrid(payload.gridCoordinates, pieceObject);
+        }
+
+        protected void OnOrderMovePieceOnBoard(object sender, BoardEvents.OrderMovePieceOnBoardPayload payload)
+        {
+            //Get tile we wish to place on
+            TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(payload.toGridCoordinates).Key;
+            Assert.NotNull(tile);
+
+            //Check location is free
+            if (BoardSystem<PieceObject>.GetItemOnGrid(payload.toGridCoordinates).Key)
+            {
+                DebugSystem.Warn(
+                    $"Cannot place piece on location {payload.toGridCoordinates.ToString()} as this location is already occupied");
+                return;
+            }
+
+            //Now everything has been validated, move it
+
+            // Clear old location
+            BoardSystem<PieceObject>.RemoveItemFromGrid(payload.fromGridCoordinates);
+            BoardSystem<TileObject>.GetItemOnGrid(payload.fromGridCoordinates).Key.GetState().ClearOccupier();
+
+            // Set new location
+            BoardSystem<PieceObject>.SetItemOnGrid(payload.toGridCoordinates, payload.pieceObject);
+            BoardSystem<TileObject>.GetItemOnGrid(payload.toGridCoordinates).Key.GetState()
+                .SetOccupier(payload.pieceObject);
         }
     }
 }

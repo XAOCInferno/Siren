@@ -4,6 +4,7 @@ using Debug;
 using Gameplay.Card;
 using Gameplay.Piece;
 using Gameplay.Tile;
+using Global;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -36,15 +37,18 @@ namespace Gameplay
 
     public static class GameplaySystem
     {
+        [CanBeNull] private static PieceObject _pieceBeingControlled;
         [CanBeNull] private static CardObject _cardBeingPlayed;
 
+        public static PieceObject GetPieceBeingControlled() => _pieceBeingControlled;
         public static CardObject GetCardBeingPlayed() => _cardBeingPlayed;
 
-        public static bool HasLocalCardBeingPlayed()
+        public static bool HasCardBeingPlayed()
         {
             return _cardBeingPlayed;
         }
-        public static void SetLocalCardBeingPlayed(CardObject cardObject)
+
+        public static void SetCardBeingPlayed(CardObject cardObject)
         {
             _cardBeingPlayed = cardObject;
         }
@@ -53,7 +57,22 @@ namespace Gameplay
         {
             _cardBeingPlayed = null;
         }
-        
+
+        public static bool HasPieceBeingControlled()
+        {
+            return _pieceBeingControlled;
+        }
+
+        public static void SetPieceBeingControlled(PieceObject pieceObject)
+        {
+            _pieceBeingControlled = pieceObject;
+        }
+
+        public static void ClearPieceBeingControlled()
+        {
+            _pieceBeingControlled = null;
+        }
+
         public static ActionResult PlayCard(Vector2Int gridLocation, Player.Player playedBy)
         {
             //Make sure we have a card to play, otherwise return fail
@@ -72,7 +91,8 @@ namespace Gameplay
             return new ActionResult(true);
         }
 
-        public static BoardSystem<TileObject>.GetItemsInAreaResponse GetTilesPieceWouldOccupy(PieceData pieceData, Vector2Int gridLocation)
+        public static BoardSystem<TileObject>.GetItemsInAreaResponse GetTilesPieceWouldOccupy(PieceData pieceData,
+            Vector2Int gridLocation)
         {
             //Get items in our shape
             BoardSystem<TileObject>.GetItemsInAreaResponse response = pieceData.GetSizeShape() switch
@@ -86,6 +106,17 @@ namespace Gameplay
             return response;
         }
 
+        public static ActionResult CanMovePieceToLocation(PieceObject pieceObject, Vector2Int gridLocation)
+        {
+            //Check is in range
+            if (!pieceObject.GetState().GetPossibleMovementLocations().Contains(gridLocation))
+            {
+                return new ActionResult(false, "Trying to move piece to a location that is not in movement range.");
+            }
+            
+            return CanPlayPieceAtLocation(pieceObject.GetLogic().GetPieceData(), gridLocation);
+        }
+        
         public static ActionResult CanPlayPieceAtLocation(PieceData pieceData, Vector2Int gridLocation)
         {
             //Get items in our shape
@@ -97,7 +128,7 @@ namespace Gameplay
                     $"No space to play card at location {gridLocation} as object would go out of bounds.");
 
             //Check for objects being occupied
-            if (response.foundItems.Any(t => t.GetState().GetLogicStateMachine().GetState() ==
+            if (response.foundItems.Any(t => t.Key.GetState().GetLogicStateMachine().GetState() ==
                                              ETileLogicState.OccupiedByPiece))
             {
                 return new ActionResult(false,
@@ -105,6 +136,22 @@ namespace Gameplay
             }
 
             //Success
+            return new ActionResult(true);
+        }
+
+        public static ActionResult MovePiece(PieceObject pieceObject, Vector2Int gridLocation)
+        {
+            //Make sure we can play the piece at the given location
+            if (!CanMovePieceToLocation(pieceObject, gridLocation).isSuccess)
+                return new ActionResult(false);
+
+            //Safe to continue
+            //Play
+            BoardEvents.InvokeOnOrderMovePieceOnBoard(pieceObject,
+                new BoardEvents.OrderMovePieceOnBoardPayload(pieceObject, gridLocation,
+                    BoardSystem<PieceObject>.GetItemLocationOnGrid(pieceObject)));
+
+            //Return success
             return new ActionResult(true);
         }
     }

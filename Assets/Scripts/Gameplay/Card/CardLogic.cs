@@ -131,7 +131,7 @@ namespace Gameplay.Card
             state.GetInteractionStateMachine().SetState(EInteractionState.Selected);
 
             //Save the new local card
-            GameplaySystem.SetLocalCardBeingPlayed(_cardObject);
+            GameplaySystem.SetCardBeingPlayed(_cardObject);
         }
 
         public void SetInteractable(bool interactable)
@@ -186,7 +186,7 @@ namespace Gameplay.Card
             desiredGridLocation = atGridLocation;
 
             //Try get tile
-            TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(atGridLocation);
+            TileObject tile = BoardSystem<TileObject>.GetItemOnGrid(atGridLocation).Key;
             Assert.NotNull(tile);
 
             //End interaction

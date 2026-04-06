@@ -30,9 +30,10 @@ namespace Gameplay.Tile
         private readonly EnumStateMachine<ETileViewState> _viewStateMachine = new();
         public EnumStateMachine<ETileViewState> GetViewStateMachine() => _viewStateMachine;
 
+        private const float OccupierMoveDurationPerMeter = 0.1f;
 
-        [CanBeNull] private PieceLogic _occupiedByPieceLogic = null;
-        private Vector2Int _gridLocation;
+
+        [CanBeNull] private PieceObject _occupiedByPieceObject = null;
 
         protected TileObject tileObject;
 
@@ -42,36 +43,49 @@ namespace Gameplay.Tile
             Assert.NotNull(tileObject);
         }
 
-        public void SetOccupier(PieceObject pieceLogic)
+        public void SetOccupier(PieceObject pieceObject)
         {
             // Cache the occupied by piece logic
-            _occupiedByPieceLogic = pieceLogic.GetLogic();
+            _occupiedByPieceObject = pieceObject;
 
             // Set position of tile so that the connection markers are touching
-            Transform pieceTransform = pieceLogic.transform;
-            pieceTransform.parent = tileObject.GetMoveableObject().transform;
-            pieceTransform.localPosition = tileObject.GetPieceConnectionMkr().transform.localPosition +
-                                           (pieceLogic.GetTileConnectionMkr().transform.localPosition * -1);
+            pieceObject.transform.parent = tileObject.GetMoveableObject().transform;
+            Vector3 currentLocalPos = pieceObject.transform.localPosition;
+            Vector3 desiredLocalPos = tileObject.GetPieceConnectionMkr().transform.localPosition +
+                                      (pieceObject.GetTileConnectionMkr().transform.localPosition * -1);
+            
+            // Get our move duration
+            float distance = Vector3.Distance(currentLocalPos, desiredLocalPos);
+            float moveDuration = OccupierMoveDurationPerMeter * distance;
+
+            // Move
+            pieceObject.GetView().ClearAnyPreviewedTiles();
+            pieceObject.GetMoveableObject().MoveTo(desiredLocalPos,
+                moveDuration, false, (v) =>
+                {
+                    pieceObject.GetView().UpdateSelectionPreview();
+                    return 0;
+                });
 
             // Update state
             _logicStateMachine.SetState(ETileLogicState.OccupiedByPiece);
         }
 
-        public PieceLogic GetOccupier() => _occupiedByPieceLogic;
+        public PieceObject GetOccupier() => _occupiedByPieceObject;
 
         public void ClearOccupier()
         {
-            _occupiedByPieceLogic = null;
+            // Clear the occupier
+            if (_occupiedByPieceObject)
+            {
+                _occupiedByPieceObject.transform.parent = null;
+                _occupiedByPieceObject = null;
+            }
+
+            // Set state
             _logicStateMachine.SetState(ETileLogicState.Idle);
         }
 
         public bool GetIsOccupiedByPiece() => _logicStateMachine.GetState() == ETileLogicState.OccupiedByPiece;
-
-        public void SetGridLocation(Vector2Int location)
-        {
-            _gridLocation = location;
-        }
-
-        public Vector2Int GetGridLocation() => _gridLocation;
     }
 }

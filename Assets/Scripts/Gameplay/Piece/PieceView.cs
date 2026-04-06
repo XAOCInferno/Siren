@@ -35,7 +35,14 @@ namespace Gameplay.Piece
             //Get our object
             _pieceObject = GetComponent<PieceObject>();
             Assert.NotNull(_pieceObject);
-            _cachedDynamicTransform = _pieceObject.GetTileScaleMkr().transform;
+
+            _cachedDynamicTransform = _pieceObject.GetMoveableObject().transform;
+
+            _pieceObject.GetMoveableObject().BindToOnMovementCallback(gameObject, () =>
+            {
+                UpdateMeshInstancing();
+                return 0;
+            });
 
             //Subscribe to state machine
             SubscribeToStateChangedEvent();
@@ -52,6 +59,7 @@ namespace Gameplay.Piece
 
         private void OnDestroy()
         {
+            _pieceObject.GetMoveableObject().UnBindToOnMovementCallback(gameObject);
             UnSubscribeFromStateChangedEvent();
         }
 
@@ -177,7 +185,8 @@ namespace Gameplay.Piece
 
         public void SetMeshScale(Vector3 scale)
         {
-            _pieceObject.GetTileScaleMkr().localScale = scale;
+            _cachedDynamicTransform.localScale = scale;
+            UpdateMeshInstancing();
         }
 
         public void SetMesh(Mesh newMesh)
@@ -215,57 +224,35 @@ namespace Gameplay.Piece
 
         public void SetSelected()
         {
-            //Get our movement settings
-            TileObject[] tilesInMovementRange;
-            Vector2Int gridLocation = _pieceObject.GetState().GetGridLocation();
-            PieceData pieceData = _pieceObject.GetLogic().GetPieceData();
-            EPieceMovementType movementType = pieceData.GetMovementType();
-            int movementSpeed = pieceData.GetBaseMovement();
-
             //Change to selected material
             if (!_materialMap.TryGetValue(EPieceViewState.Selected, out var mat)) return;
             SetMaterial(mat);
 
-            //If piece cannot move, we can return early now
-            if (movementType == EPieceMovementType.None || movementSpeed == 0) return;
+            UpdateSelectionPreview();
+        }
 
-            //Preview move logic
-            //Get tiles that are in our range
-            switch (movementType)
+        public void UpdateSelectionPreview()
+        {
+            // Only update if we're selected
+            if(_pieceObject.GetState().GetViewStateMachine().GetState() != EPieceViewState.Selected) return;
+            
+            // Clear
+            ClearAnyPreviewedTiles();
+            
+            // Get tiles we are in range of
+            Vector2Int[] validMoveableLocations = _pieceObject.GetState().GetPossibleMovementLocations();
+            TileObject[] tilesInMovementRange = new TileObject[validMoveableLocations.Length];
+            for (int a = 0; a < validMoveableLocations.Length; a++)
             {
-                case EPieceMovementType.Cross:
-                    tilesInMovementRange =
-                        BoardSystem<TileObject>.GetItemsInCross(gridLocation, movementSpeed).foundItems;
-                    break;
-                case EPieceMovementType.Diagonal:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInDiagonalCross(gridLocation, movementSpeed)
-                        .foundItems;
-                    break;
-                case EPieceMovementType.Star:
-                    tilesInMovementRange =
-                        BoardSystem<TileObject>.GetItemsInStar(gridLocation, movementSpeed).foundItems;
-                    break;
-                case EPieceMovementType.Circle:
-                    tilesInMovementRange =
-                        BoardSystem<TileObject>.GetItemsInCircle(gridLocation, movementSpeed).foundItems;
-                    break;
-                case EPieceMovementType.Square:
-                    tilesInMovementRange =
-                        BoardSystem<TileObject>.GetItemsInSquare(gridLocation, movementSpeed).foundItems;
-                    break;
-                case EPieceMovementType.LShaped:
-                    tilesInMovementRange = BoardSystem<TileObject>.GetItemsInLShapeCross(gridLocation, movementSpeed)
-                        .foundItems;
-                    break;
-                default:
-                    DebugSystem.Warn(
-                        $"Unexpected movement type {movementType}, this is not supported. Piece will be treated as immovable, though code should have returned early before thie point.");
-                    return;
+                tilesInMovementRange[a] = BoardSystem<TileObject>.GetItemOnGrid(validMoveableLocations[a]).Key;
             }
 
-            //Preview movement on all tiles in range, if any
+            // Preview movement on all tiles in range, if any
             for (int i = 0; i < tilesInMovementRange.Length; i++)
             {
+                // Check is not null
+                if (!tilesInMovementRange[i]) continue;
+
                 //Check if the tiles are occupied by an enemy, if they are, then we preview for attack, otherwise for move
                 var occupier = tilesInMovementRange[i].GetState().GetOccupier();
                 if (occupier && occupier.GetComponent<PieceState>().GetOwnerPlayer() !=
@@ -283,7 +270,7 @@ namespace Gameplay.Piece
             currentPreviewedTiles = tilesInMovementRange.ToList();
         }
 
-        protected void ClearAnyPreviewedTiles()
+        public void ClearAnyPreviewedTiles()
         {
             //Return early if we have no tiles to prevent null ref in foreach
             if (currentPreviewedTiles.Count == 0) return;
@@ -308,7 +295,7 @@ namespace Gameplay.Piece
             SetMaterial(mat);
         }
 
-        protected void UpdateMeshInstancing()
+        public void UpdateMeshInstancing()
         {
             //Check we have required mesh and mat
             if (!_currentMaterial || !_currentMesh) return;

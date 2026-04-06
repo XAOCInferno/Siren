@@ -109,20 +109,20 @@ namespace Gameplay.Card
         public void SetDesiredPosition(Vector3 position, float moveTime)
         {
             desiredPosition = position;
-            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime);
+            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime, true);
         }
 
         public void SetDesiredPosition(Vector3 position, float moveTime,
             [CanBeNull] Func<EMoveCompleteCallbackType, int> callback)
         {
             desiredPosition = position;
-            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime, callback);
+            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime, true, callback);
         }
 
         public void SetDesiredOffset(Vector3 offset, float moveTime)
         {
             desiredOffset = offset;
-            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime);
+            _object.GetMoveableObject().MoveTo(desiredPosition + desiredOffset, moveTime, true);
         }
 
 

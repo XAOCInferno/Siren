@@ -1,5 +1,7 @@
+using System;
+using Gameplay.Tile;
+using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Utils.StateMachine;
 
 namespace Gameplay.Piece
@@ -21,8 +23,6 @@ namespace Gameplay.Piece
 
     public class PieceState : MonoBehaviour
     {
-        private Vector2Int _gridLocation;
-
         //Logic
         private readonly EnumStateMachine<EPieceLogicState> _logicStateMachine = new();
         public EnumStateMachine<EPieceLogicState> GetLogicStateMachine() => _logicStateMachine;
@@ -31,21 +31,33 @@ namespace Gameplay.Piece
         private readonly EnumStateMachine<EPieceViewState> _viewStateMachine = new();
         public EnumStateMachine<EPieceViewState> GetViewStateMachine() => _viewStateMachine;
 
+        //Grid
+        private Vector2Int[] _possibleMovementLocations = Array.Empty<Vector2Int>();
+
         public bool interactable;
         protected Player.Player ownerPlayer;
 
-        public void SetGridLocation(Vector2Int location)
+        private PieceObject _pieceObject;
+
+        private void Awake()
         {
-            _gridLocation = location;
+            _pieceObject = GetComponent<PieceObject>();
+
+            Assert.NotNull(_pieceObject);
         }
 
-        public Vector2Int GetGridLocation() => _gridLocation;
-        
         public void SetOwnerPlayer(Player.Player player)
         {
             ownerPlayer = player;
         }
 
         public Player.Player GetOwnerPlayer() => ownerPlayer;
+
+        public void SetPossibleMovementLocations(Vector2Int[] locations)
+        {
+            _possibleMovementLocations = locations;
+        }
+
+        public Vector2Int[] GetPossibleMovementLocations() => _possibleMovementLocations;
     }
 }

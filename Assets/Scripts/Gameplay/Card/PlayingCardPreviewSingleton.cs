@@ -60,7 +60,7 @@ namespace Gameplay.Card
 
             //Do move in animation
             transform.position = mkrMoveInFromLocation.position;
-            _dynamicObject.MoveTo(mkrMoveInToLocation.position, moveDuration);
+            _dynamicObject.MoveTo(mkrMoveInToLocation.position, moveDuration, true);
 
             //Finally show the preview
             graphicsParent.SetActive(true);
@@ -70,7 +70,7 @@ namespace Gameplay.Card
         {
             //Move out the card
             transform.position = mkrMoveInToLocation.position;
-            _dynamicObject.MoveTo(mkrMoveInFromLocation.position, moveDuration, type =>
+            _dynamicObject.MoveTo(mkrMoveInFromLocation.position, moveDuration, true, type =>
             {
                 //When moved out, deactivate it
                 graphicsParent.SetActive(false);

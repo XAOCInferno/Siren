@@ -184,6 +184,12 @@ namespace Gameplay.Tile
             }
         }
 
+        public void SetScale(Vector3 scale)
+        {
+            _cachedDynamicTransform.localScale = scale;
+            UpdateMeshInstancing();
+        }
+
         public void SetMesh(Mesh newMesh)
         {
             // Update mesh if we are not already assigned it
@@ -203,12 +209,12 @@ namespace Gameplay.Tile
 
         protected void MoveToActivePosition()
         {
-            tileObject.GetMoveableObject().MoveTo(startingPos + (Vector3.up * yMoveOnHover), moveTime);
+            tileObject.GetMoveableObject().MoveTo(startingPos + (Vector3.up * yMoveOnHover), moveTime, true);
         }
 
         protected void MoveToIdlePosition()
         {
-            tileObject.GetMoveableObject().MoveTo(startingPos, moveTime);
+            tileObject.GetMoveableObject().MoveTo(startingPos, moveTime, true);
         }
 
         protected void SetIdleMaterial()
@@ -233,12 +239,12 @@ namespace Gameplay.Tile
         {
             var response = GameplaySystem.GetTilesPieceWouldOccupy(
                 card.GetLogic().GetCardData().GetAssociatedPieceData(),
-                tileObject.GetState().GetGridLocation());
+                BoardSystem<TileObject>.GetItemLocationOnGrid(tileObject));
 
             for (int i = 0; i < response.foundItems.Length; i++)
             {
-                response.foundItems[i].GetState().GetViewStateMachine().SetState(ETileViewState.PreviewPlayCard);
-                _currentlyPreviewedTiles.Add(response.foundItems[i]);
+                response.foundItems[i].Key.GetState().GetViewStateMachine().SetState(ETileViewState.PreviewPlayCard);
+                _currentlyPreviewedTiles.Add(response.foundItems[i].Key);
             }
 
             PiecePreviewSingleton.instance.PreviewPieceOnTile(
