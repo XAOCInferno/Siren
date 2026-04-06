@@ -23,7 +23,7 @@ namespace UI
 
         [DoNotSerialize] protected ECardType type;
 
-        public ECardType GetType() => type;
+        public ECardType GetCardType() => type;
 
         public void SetType(ECardType cardType)
         {
@@ -63,7 +63,7 @@ namespace UI
             SetTypeImage(cardType);
         }
 
-        public ECardType GetType() => cardViewModelData.GetType();
+        public ECardType GetCardType() => cardViewModelData.GetCardType();
 
         public void SetMainImage(Sprite sprite)
         {
@@ -76,7 +76,7 @@ namespace UI
 
         public void SetTypeImage(ECardType cardType)
         {
-            if (cardViewModelData.GetType() != cardType || !typeImageComponent.sprite)
+            if (cardViewModelData.GetCardType() != cardType || !typeImageComponent.sprite)
             {
                 // Update type
                 cardViewModelData.SetType(cardType);

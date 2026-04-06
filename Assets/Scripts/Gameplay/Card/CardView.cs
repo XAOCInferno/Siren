@@ -94,7 +94,7 @@ namespace Gameplay.Card
 
                     //Set preview
                     PlayingCardPreviewSingleton.instance.SetFocusedCardData(cardViewModel.GetViewModelData(),
-                        cardViewModel.GetType());
+                        cardViewModel.GetCardType());
                     break;
             }
 
