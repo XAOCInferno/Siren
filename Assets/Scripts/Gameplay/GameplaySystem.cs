@@ -1,40 +1,15 @@
 using System;
 using System.Linq;
-using Debug;
 using Gameplay.Card;
 using Gameplay.Piece;
 using Gameplay.Tile;
 using Global;
 using JetBrains.Annotations;
 using UnityEngine;
+using Utils;
 
 namespace Gameplay
 {
-    //Use this as a function return value for a function which would normally return a bool (success or fail)
-    public struct ActionResult
-    {
-        public readonly bool isSuccess;
-        [CanBeNull] readonly string msg;
-
-        public ActionResult(bool isSuccess, [CanBeNull] string msg = null)
-        {
-            this.isSuccess = isSuccess;
-            this.msg = msg;
-            //Log message if we have it
-            if (msg == null) return;
-            if (isSuccess)
-            {
-                //Success, Log
-                DebugSystem.Log(msg);
-            }
-            else
-            {
-                //Fail, Warn. We do not need to error as most failures are safe. If it is not safe then we can handle on a need-to basis
-                DebugSystem.Warn(msg);
-            }
-        }
-    }
-
     public static class GameplaySystem
     {
         [CanBeNull] private static PieceObject _pieceBeingControlled;
@@ -73,12 +48,12 @@ namespace Gameplay
             _pieceBeingControlled = null;
         }
 
-        public static ActionResult PlayCard(Vector2Int gridLocation, Player.Player playedBy)
+        public static Util.ActionResult PlayCard(Vector2Int gridLocation, Player.Player playedBy)
         {
             //Make sure we have a card to play, otherwise return fail
-            if (!_cardBeingPlayed) return new ActionResult(false, "No card being played according to GameplaySystem.");
+            if (!_cardBeingPlayed) return new Util.ActionResult(false, "No card being played according to GameplaySystem.");
             if (!CanPlayPieceAtLocation(_cardBeingPlayed.GetLogic().GetCardData().GetAssociatedPieceData(),
-                    gridLocation).isSuccess) return new ActionResult(false);
+                    gridLocation).isSuccess) return new Util.ActionResult(false);
 
             //Safe to continue
             //Play
@@ -88,7 +63,7 @@ namespace Gameplay
             ClearCardBeingPlayed();
 
             //Return success
-            return new ActionResult(true);
+            return new Util.ActionResult(true);
         }
 
         public static BoardSystem<TileObject>.GetItemsInAreaResponse GetTilesPieceWouldOccupy(PieceData pieceData,
@@ -106,44 +81,44 @@ namespace Gameplay
             return response;
         }
 
-        public static ActionResult CanMovePieceToLocation(PieceObject pieceObject, Vector2Int gridLocation)
+        public static Util.ActionResult CanMovePieceToLocation(PieceObject pieceObject, Vector2Int gridLocation)
         {
             //Check is in range
             if (!pieceObject.GetState().GetPossibleMovementLocations().Contains(gridLocation))
             {
-                return new ActionResult(false, "Trying to move piece to a location that is not in movement range.");
+                return new Util.ActionResult(false, "Trying to move piece to a location that is not in movement range.");
             }
             
             return CanPlayPieceAtLocation(pieceObject.GetLogic().GetPieceData(), gridLocation);
         }
         
-        public static ActionResult CanPlayPieceAtLocation(PieceData pieceData, Vector2Int gridLocation)
+        public static Util.ActionResult CanPlayPieceAtLocation(PieceData pieceData, Vector2Int gridLocation)
         {
             //Get items in our shape
             BoardSystem<TileObject>.GetItemsInAreaResponse response = GetTilesPieceWouldOccupy(pieceData, gridLocation);
 
             //Check if all expected tiles are present
             if (response.isMissingExpectedItems)
-                return new ActionResult(false,
+                return new Util.ActionResult(false,
                     $"No space to play card at location {gridLocation} as object would go out of bounds.");
 
             //Check for objects being occupied
             if (response.foundItems.Any(t => t.Key.GetState().GetLogicStateMachine().GetState() ==
                                              ETileLogicState.OccupiedByPiece))
             {
-                return new ActionResult(false,
+                return new Util.ActionResult(false,
                     $"No space to play card at location {gridLocation} as required tile is occupied.");
             }
 
             //Success
-            return new ActionResult(true);
+            return new Util.ActionResult(true);
         }
 
-        public static ActionResult MovePiece(PieceObject pieceObject, Vector2Int gridLocation)
+        public static Util.ActionResult MovePiece(PieceObject pieceObject, Vector2Int gridLocation)
         {
             //Make sure we can play the piece at the given location
             if (!CanMovePieceToLocation(pieceObject, gridLocation).isSuccess)
-                return new ActionResult(false);
+                return new Util.ActionResult(false);
 
             //Safe to continue
             //Play
@@ -152,7 +127,7 @@ namespace Gameplay
                     BoardSystem<PieceObject>.GetItemLocationOnGrid(pieceObject)));
 
             //Return success
-            return new ActionResult(true);
+            return new Util.ActionResult(true);
         }
     }
 }

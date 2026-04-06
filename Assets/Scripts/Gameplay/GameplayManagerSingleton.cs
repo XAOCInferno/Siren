@@ -104,21 +104,21 @@ namespace Gameplay
             }
         }
 
-        protected static ActionResult PlayCardToTile(TileObject tileObject, bool playedByLocalPlayer)
+        protected static Util.ActionResult PlayCardToTile(TileObject tileObject, bool playedByLocalPlayer)
         {
             //Ensure this is a valid play
             if (tileObject.GetState().GetIsOccupiedByPiece())
-                return new ActionResult(false, "Cannot play card to tile as destination tile is occupied");
+                return new Util.ActionResult(false, "Cannot play card to tile as destination tile is occupied");
 
             return GameplaySystem.PlayCard(BoardSystem<TileObject>.GetItemLocationOnGrid(tileObject),
                 playedByLocalPlayer ? PlayerSystem.GetLocalPlayer() : PlayerSystem.GetAIPlayer());
         }
 
-        protected static ActionResult HandlePieceToTileAction(PieceObject pieceObject, TileObject tileObject)
+        protected static Util.ActionResult HandlePieceToTileAction(PieceObject pieceObject, TileObject tileObject)
         {
             //Ensure this is a valid play
             if (tileObject.GetState().GetIsOccupiedByPiece())
-                return new ActionResult(false, "Cannot handle piece movement as tile is occupied");
+                return new Util.ActionResult(false, "Cannot handle piece movement as tile is occupied");
 
             return GameplaySystem.MovePiece(pieceObject, BoardSystem<TileObject>.GetItemLocationOnGrid(tileObject));
         }
