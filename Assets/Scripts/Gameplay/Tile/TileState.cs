@@ -1,3 +1,4 @@
+using System;
 using Gameplay.Piece;
 using JetBrains.Annotations;
 using NUnit.Framework;
@@ -45,6 +46,10 @@ namespace Gameplay.Tile
 
         public void SetOccupier(PieceObject pieceObject)
         {
+            // Get state and view
+            PieceState pieceState = pieceObject.GetState();
+            PieceView pieceView = pieceObject.GetView();
+
             // Cache the occupied by piece logic
             _occupiedByPieceObject = pieceObject;
 
@@ -53,19 +58,22 @@ namespace Gameplay.Tile
             Vector3 currentLocalPos = pieceObject.transform.localPosition;
             Vector3 desiredLocalPos = tileObject.GetPieceConnectionMkr().transform.localPosition +
                                       (pieceObject.GetTileConnectionMkr().transform.localPosition * -1);
-            
+
             // Get our move duration
             float distance = Vector3.Distance(currentLocalPos, desiredLocalPos);
             float moveDuration = OccupierMoveDurationPerMeter * distance;
 
             // Move
-            pieceObject.GetView().ClearAnyPreviewedTiles();
+            pieceView.ClearAnyPreviewedTiles();
             pieceObject.GetMoveableObject().MoveTo(desiredLocalPos,
-                moveDuration, false, (v) =>
+                pieceState.isOnTile ? moveDuration : 0, false, (v) =>
                 {
-                    pieceObject.GetView().UpdateSelectionPreview();
+                    pieceView.UpdateSelectionPreview();
                     return 0;
                 });
+
+            // Inform piece it is actively on the tile
+            pieceState.isOnTile = true;
 
             // Update state
             _logicStateMachine.SetState(ETileLogicState.OccupiedByPiece);

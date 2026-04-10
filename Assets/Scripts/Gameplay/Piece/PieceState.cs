@@ -34,6 +34,9 @@ namespace Gameplay.Piece
         //Grid
         private Vector2Int[] _possibleMovementLocations = Array.Empty<Vector2Int>();
 
+        //State
+        public bool isOnTile = false;
+
         public bool interactable;
         protected Player.Player ownerPlayer;
 
@@ -44,6 +47,12 @@ namespace Gameplay.Piece
             _pieceObject = GetComponent<PieceObject>();
 
             Assert.NotNull(_pieceObject);
+        }
+
+        // Reset certain state on enable
+        private void OnEnable()
+        {
+            isOnTile = false;
         }
 
         public void SetOwnerPlayer(Player.Player player)
