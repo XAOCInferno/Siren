@@ -14,6 +14,7 @@ namespace Utils
     {
         private static readonly Dictionary<string, T> LoadedAssets = new();
         private static readonly Dictionary<string, AsyncOperationHandle<T>> CurrentlyLoadingHandles = new();
+        private static readonly List<string> ActivelyLoadingAddressables = new();
 
         /// <summary>
         /// Returns either the cached addressable result or fetches it from the addressables.
@@ -22,16 +23,27 @@ namespace Utils
         /// <returns></returns>
         public static async Task<T> GetOrLoadAddressable(string addressableId)
         {
-            //If we've already loaded the addressable then return it instantly
+            // Wait until finished loading a previous request before continuing
+            while (ActivelyLoadingAddressables.Contains(addressableId))
+            {
+                await Task.Yield();
+            }
+
+            // If we've already loaded the addressable then return it instantly
             if (LoadedAssets.TryGetValue(addressableId, out var addressable))
             {
                 return addressable;
             }
 
-            //Load addressable Asynchronously
+            // Load addressable Asynchronously
             if (!CurrentlyLoadingHandles.TryGetValue(addressableId, out var handle))
             {
-                //Failed to get in dictionary, so this is the first time we are trying to load
+                // Failed to get in dictionary, so this is the first time we are trying to load
+
+                // Track we're loading so that we don't get duplicate load when called in multiple places simultaneously
+                ActivelyLoadingAddressables.Add(addressableId);
+
+                // Begin async load
                 handle = Addressables.LoadAssetAsync<T>(
                     addressableId);
                 CurrentlyLoadingHandles.Add(addressableId, handle);
@@ -43,19 +55,26 @@ namespace Utils
                 await Task.Yield();
             }
 
-            //Success, save result
+            // Remove our loading tracking
+            int idx = ActivelyLoadingAddressables.FindIndex(x => x.Equals(addressableId));
+            if (idx > -1)
+            {
+                ActivelyLoadingAddressables.RemoveAt(idx);
+            }
+
+            // Success, save result
             if (handle.Status == AsyncOperationStatus.Succeeded)
             {
                 LoadedAssets.Add(addressableId, handle.Result);
             }
             else
             {
-                //Failed to load
+                // Failed to load
                 handle.Release();
                 DebugSystem.Error($"Failed to load addressable {addressableId}!");
             }
 
-            //Return asset or null
+            // Return asset or null
             return handle.Result;
         }
     }
