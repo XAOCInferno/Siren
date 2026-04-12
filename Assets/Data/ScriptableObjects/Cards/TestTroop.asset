@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63022d2ee009621498f27395085223b8, type: 3}
   m_Name: TestTroop
   m_EditorClassIdentifier: Assembly-CSharp:Gameplay:CardData
+  resourceChangeBy:
+  - resourceType: 0
+    decrease: 1
+    increase: 0
   type: 1
   associatedPieceData: {fileID: 11400000, guid: e77ba229067be0a4ba189f1b6a4299e3, type: 2}
   viewData:

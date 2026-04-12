@@ -3,11 +3,13 @@ using System.Threading.Tasks;
 using Behaviours;
 using CustomCamera;
 using Debug;
+using Gameplay.Resources;
 using Gameplay.Tile;
 using Global;
 using Interaction;
 using JetBrains.Annotations;
 using NUnit.Framework;
+using UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -121,6 +123,10 @@ namespace Gameplay.Card
 
         public void SetHovered()
         {
+            // Inform GS we're hovering
+            GameplaySystem.SetCardBeingHovered(_cardObject);
+
+            // Set state
             _cardObject.GetState().GetInteractionStateMachine().SetState(EInteractionState.Hovered);
         }
 
@@ -149,8 +155,31 @@ namespace Gameplay.Card
         {
             //Our Data
             _cardData = newCardData;
-            //Set on VM
-            _cardObject.GetView().SetViewModelData(newCardData.GetViewData(), newCardData.GetCardType());
+
+            // Ensure cost is up to data
+            UpdateCost();
+        }
+
+        public void UpdateCost()
+        {
+            CardViewModelData vmData = _cardData.GetViewData();
+            ResourceChange[] resourceChangeBy = _cardData.GetResourceChangeBy();
+            int cost = 0;
+            for (int i = 0; i < resourceChangeBy.Length; i++)
+            {
+                if (resourceChangeBy[i].resourceType == EResourceType.Energy)
+                {
+                    cost += resourceChangeBy[i].decrease;
+                    cost -= resourceChangeBy[i].increase;
+                }
+            }
+
+            // Apply to VM data
+            cost = Math.Max(cost, 0);
+            vmData.SetCost(cost);
+
+            // Set on VM
+            _cardObject.GetView().SetViewModelData(vmData, _cardData.GetCardType());
         }
 
         public CardData GetCardData() => _cardData;

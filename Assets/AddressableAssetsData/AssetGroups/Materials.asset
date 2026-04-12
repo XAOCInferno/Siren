@@ -20,13 +20,53 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 237081b5ab353ac4dbefb22b47019529
+    m_Address: M_PipeEnergyOpponentPowered
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30287613295d36e47b80675ae79e232b
+    m_Address: M_PipeEnergyOwnOffline
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 59fdf43c5c09a7946ad9289b67a9900f
     m_Address: M_PieceIdle.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 724044b862372c44daef30ce469a6de0
+    m_Address: M_PipeEnergyOpponentCostPreview
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 916ad3528696b454dbbcb7014c0470eb
     m_Address: M_PieceSelected.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 98b69ab22b9d7af418b46e8d2abe2cbf
+    m_Address: M_PipeEnergyOwnGainPreview
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c1b993f0bef4634fbb0a20fa64a5d62
+    m_Address: M_PipeEnergyOpponentOffline
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a4b15f6c628987940a12df4396d3c395
+    m_Address: M_PipeEnergyOpponentGainPreview
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb205de0165e14844988c6664980c0ac
+    m_Address: M_PipeEnergyOwnPowered
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ed0f272d7cab4ed44be1d6fa2346cd6f
+    m_Address: M_PipeEnergyOwnPreview
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

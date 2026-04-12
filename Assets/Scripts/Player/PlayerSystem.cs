@@ -45,5 +45,9 @@ namespace Player
         {
             return Players.Find((player => !player.playerData.isLocallyControlled));
         }
+        public static bool IsLocalPlayer(Player player)
+        {
+            return GetLocalPlayer() == player;
+        }
     }
 }

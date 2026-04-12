@@ -10,7 +10,6 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
-using Utils;
 
 namespace UI
 {
@@ -19,7 +18,7 @@ namespace UI
     {
         public Sprite mainImage;
         public string titleText;
-        public string costText;
+        [DoNotSerialize] public string costText;
 
         [DoNotSerialize] protected ECardType type;
 
@@ -28,6 +27,11 @@ namespace UI
         public void SetType(ECardType cardType)
         {
             type = cardType;
+        }
+        
+        public void SetCost(int cost)
+        {
+            costText = cost.ToString();
         }
     }
 

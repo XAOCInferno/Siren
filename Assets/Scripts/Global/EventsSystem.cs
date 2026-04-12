@@ -3,6 +3,7 @@ using CustomCamera;
 using Gameplay;
 using Gameplay.Card;
 using Gameplay.Piece;
+using Gameplay.Resources;
 using Gameplay.Tile;
 using Input;
 using JetBrains.Annotations;
@@ -288,6 +289,37 @@ namespace Global
             GameplayPhaseStateChangedPayload payload)
         {
             OnGameplayPhaseStateChanged?.Invoke(sender, payload);
+        }
+    }
+
+    public static class ResourceEvents
+    {
+        //Broadcast resource changes (either current resources or previewed resources;
+        public class ResourcePreviewChanged : EventArgs
+        {
+            public readonly EResourceType resourceType;
+            public readonly int costsPreviewed;
+            public readonly int resourcesRemaining;
+            public readonly int resourcesGained;
+            public readonly bool isLocalPlayer;
+
+            public ResourcePreviewChanged(EResourceType resourceType, int costsPreviewed, int resourcesRemaining, int resourcesGained,
+                bool isLocalPlayer)
+            {
+                this.resourceType = resourceType;
+                this.costsPreviewed = costsPreviewed;
+                this.resourcesRemaining = resourcesRemaining;
+                this.resourcesGained = resourcesGained;
+                this.isLocalPlayer = isLocalPlayer;
+            }
+        }
+
+        public static event EventHandler<ResourcePreviewChanged> OnResourcePreviewChanged;
+
+        public static void InvokeOnResourcePreviewChanged([CanBeNull] object sender,
+            ResourcePreviewChanged payload)
+        {
+            OnResourcePreviewChanged?.Invoke(sender, payload);
         }
     }
 }
