@@ -1,11 +1,13 @@
-using System;
-using Gameplay;
+using Gameplay.Resources;
 using UnityEngine;
 
-public class GameplaySystemsManager : MonoBehaviour
+namespace Gameplay
 {
-    private void Awake()
+    public class GameplaySystemsManager : MonoBehaviour
     {
-        ResourceSystem.Init();
+        private void Awake()
+        {
+            ResourceSystem.Init();
+        }
     }
 }
